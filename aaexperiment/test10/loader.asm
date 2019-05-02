@@ -15,6 +15,12 @@ section .text
 extern main
 extern print_char
 extern init_interrupt
+extern print_int_oct
+
+extern threa_0_task
+extern threa_1_task
+extern threa_2_task
+
 
 ;-------------------------- extern ------------------------------
 
@@ -23,11 +29,14 @@ global _start
 _start:
     mov eax, REG_0_DATA
 	mov ds, eax
-	mov gs, eax
+	mov gs, eax   ; 设置gs,fs 后面时钟中断弹栈时防止GP
+    mov fs, eax   ;
+    mov es, eax
 	; 初始化gdt
 	lgdt [end_protect_model_gdt_opcode]
 	;初始化内核栈
 	lss esp, [ring0_stack]
+
 
     ; 光标设置为第2行行首
     ; 设置光标，从第二行开始打印， 光标设置为第2行行首，第80个字符
@@ -47,28 +56,46 @@ _start:
     mov al, bl
     out dx, al
 
-    push "A"
+
+    mov eax, threa_0_task
+    push eax
+    call print_int_oct
+    add esp, 4
+
+    push "*"
     call print_char
     add esp, 4
 
+    mov eax, threa_1_task
+    push eax
+    call print_int_oct
+    add esp, 4
+
+    push "*"
+    call print_char
+    add esp, 4
+
+    mov eax, threa_2_task
+    push eax
+    call print_int_oct
+    add esp, 4
+
+    push "\n"
+    call print_char
+    add esp, 4
+
+
+
+    ; 初始化工作
+    call main
 
     push "b"
     call print_char
     add esp, 4
-
-    ; 初始化中断程序，设置8259A
-    call init_interrupt
     sti
 
-
-    ; call main
-    ; add esp, 4
-    .loop_print:
-    ; push "b"
-    ; call print_char
-    ; add esp, 4
-
-    jmp .loop_print
+    
+    jmp $
 
 
 
