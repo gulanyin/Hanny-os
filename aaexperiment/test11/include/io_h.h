@@ -25,8 +25,7 @@ static inline void outb(uint16_t port, uint8_t data) {
 static inline void outsw(uint16_t port, const void* addr, uint32_t word_cnt) {
 /*********************************************************
    +表示此限制即做输入又做输出.
-   outsw是把ds:esi处的16位的内容写入port端口, 我们在设置段描述符时,
-   已经将ds,es,ss段的选择子都设置为相同的值了,此时不用担心数据错乱。*/
+   outsw是把ds:esi处的16位的内容写入port端口。*/
    asm volatile ("cld; rep outsw" : "+S" (addr), "+c" (word_cnt) : "d" (port));
 /******************************************************/
 }

@@ -1,5 +1,5 @@
-# 线程切换
+# 键盘中断
 
-make clean
-make
-qemu-system-i386 -fda output\all.bin
+make clean </br>
+make </br>
+qemu-system-i386 -fda output\all.bin </br>
