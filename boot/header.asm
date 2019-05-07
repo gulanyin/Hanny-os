@@ -59,6 +59,23 @@ _start:
     call main
     ; sti
 
+    ; mov eax, 0x00100000
+    ; mov CR3, eax
+    ;
+    ; mov eax, CR0
+    ; or eax, 0x80000000
+    ; mov CR0, eax
+
+    push '\n'
+    call print_char
+    add esp, 4
+    push 'f'
+    call print_char
+    add esp, 4
+    push 'o'
+    call print_char
+    add esp, 4
+
     stop_run:
     ; nop
     ; nop
@@ -75,34 +92,30 @@ protect_model_gdt:
 	dw 0, 0, 0, 0
 
 	; 第1个描述符: 代码段
-	; 00c0                9a00 0000 07ff
-	;   1100 0000 1001 1010
-	; 	G=1，b=1  limit=0x007ff*4k+4095 = 8M-1,
+	; 	G=1，b=1  limit=0xfffff*4k+4095 = 0xfffff * 0x1000 + 0x1000 -1  = 0xFFFF FFFF, 4GB
 	;	base=0x00000000
 	;   type = 1001 1010
-	dw 0x07ff
+	dw 0xffff
 	dw 0x0000
 	dw 0x9a00
-	dw 0x00c0
+	dw 0x00cf
 
 	; 第2个描述符： 数据段,堆栈段
-	; 00c0                9200 0000 07ff
-	;   1100 0000 1001 0010
-	; 	G=1，b=1  limit=0x007ff*4k+4095 = 8M-1,
+	; 	G=1，b=1  limit=0xfffff*4k+4095 = 0xfffff * 0x1000 + 0x1000 -1  = 0xFFFF FFFF, 4GB
 	;	base=0x00000000
 	;   type = 1001 1010
-	dw 0x07ff
+	dw 0xffff
 	dw 0x0000
 	dw 0x9200
-	dw 0x00c0 ;
+	dw 0x00cf ;
 
 	;第3个描述符： 显存段
 	; 00C0                920b 8000 0002
 	;   1100 0000 1001 0010
-	; 	G=1，b=1  limit=3*4k=12k,
+	; 	G=1，b=1  limit=16*4k=64k,
 	;	base=0x000b8000
 	;   type = 1001 0010
-	dw 0x0002 ;
+	dw 0x000a ;
 	dw 0x8000 ;
 	dw 0x920B ;
 	dw 0x00c0 ;
