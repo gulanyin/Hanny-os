@@ -13,7 +13,8 @@ output/boot/system.bin: output/boot/system.elf
 output/boot/header.o: boot/header.asm
 	nasm -f elf $^ -o $@
 output/boot/system.elf: output/boot/header.o output/init/main.o output/kernel/print_s.o output/mm/init_memory.o \
-						output/kernel/debug.o output/kernel/string.o output/kernel/bitmap.o
+						output/kernel/debug.o output/kernel/string.o output/kernel/bitmap.o output/kernel/interrupt_c.o \
+						output/kernel/interrupt_s.o
 	ld -m elf_i386 -Ttext 0x0  -o $@ $^
 
 
@@ -26,6 +27,12 @@ output/kernel/string.o: kernel/string.c
 	gcc $(GCC_FLAG) -c $^ -o $@
 output/kernel/bitmap.o: kernel/bitmap.c
 	gcc $(GCC_FLAG) -c $^ -o $@
+
+output/kernel/interrupt_c.o: kernel/interrupt_c.c
+	gcc $(GCC_FLAG) -c $^ -o $@
+output/kernel/interrupt_s.o: kernel/interrupt_s.asm
+	nasm -f elf $^ -o $@
+
 
 
 # init
