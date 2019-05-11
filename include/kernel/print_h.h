@@ -1,5 +1,5 @@
-#ifndef __OS_PRINT_H
-#define __OS_PRINT_H
+#ifndef __KERNEL_PRINT_H
+#define __KERNEL_PRINT_H
 
 // 定义在kerner/print_s.asm汇编文件中的打印函数
 
