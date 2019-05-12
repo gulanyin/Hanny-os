@@ -14,7 +14,8 @@ output/boot/header.o: boot/header.asm
 	nasm -f elf $^ -o $@
 output/boot/system.elf: output/boot/header.o output/init/main.o output/kernel/print_s.o output/mm/init_memory.o \
 						output/kernel/debug.o output/kernel/string.o output/kernel/bitmap.o output/kernel/interrupt_c.o \
-						output/kernel/interrupt_s.o output/kernel/list_c.o  output/thread/thread_c.o output/thread/thread_s.o
+						output/kernel/interrupt_s.o output/kernel/list_c.o  output/thread/thread_c.o output/thread/thread_s.o \
+						output/kernel/sync_c.o output/device/console_c.o
 	ld -m elf_i386 -Ttext 0x0  -o $@ $^
 
 
@@ -36,6 +37,8 @@ output/kernel/interrupt_s.o: kernel/interrupt_s.asm
 output/kernel/list_c.o: kernel/list_c.c
 	gcc $(GCC_FLAG) -c $^ -o $@
 
+output/kernel/sync_c.o: kernel/sync_c.c
+	gcc $(GCC_FLAG) -c $^ -o $@
 
 
 # init
@@ -54,6 +57,11 @@ output/thread/thread_c.o: thread/thread_c.c
 	gcc $(GCC_FLAG) -c $^ -o $@
 output/thread/thread_s.o: thread/thread_s.asm
 	nasm -f elf $^ -o $@
+
+
+#divice
+output/device/console_c.o: device/console_c.c
+	gcc $(GCC_FLAG) -c $^ -o $@
 
 
 mk_dir:

@@ -2,6 +2,7 @@
 #include "mm/init_memory_h.h"
 #include "kernel/interrupt_h.h"
 #include "thread/thread_h.h"
+#include "device/console_h.h"
 
 
 void k_thread_a(void*);
@@ -36,7 +37,8 @@ void main(){
 
     while (1) {
         /* code */
-        print_str("main ");
+        // print_str("main ");
+        console_str("main ");
         asm volatile("hlt");
     }
 
@@ -48,15 +50,17 @@ void main(){
 // k_thread_a 函数
 void k_thread_a(void* args) {
    while(1) {
-      print_str(args);
-       asm volatile("hlt");
+      //print_str(args);
+      console_str(args);
+      asm volatile("hlt");
    }
 }
 
 // k_thread_b 函数
 void k_thread_b(void* args) {
     while(1) {
-       print_str(args);
+       //print_str(args);
+       console_str(args);
        asm volatile("hlt");
     }
 }
