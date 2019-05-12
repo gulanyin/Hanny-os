@@ -204,13 +204,13 @@ set_pic_8259A:
 
     ;mov al, 0xfe     ; b 11111110  开启时钟中断，屏蔽其他中断
     ; mov al, 0xfd      ; b 1111 1101 开启键盘中断
-    mov al, 0xfc     ; b 1111 1101 开启键盘中断,时钟中断
-    ;mov al, 0x0
+    ;mov al, 0xfc     ; b 1111 1101 开启键盘中断,时钟中断
+    mov al, 0x0
     out 0x21, al
     call io_delay
 
-    mov al, 0xFF
-    ;mov al, 0x0
+    ;mov al, 0xFF
+    mov al, 0x0
     out 0xA1, al
     call io_delay
 

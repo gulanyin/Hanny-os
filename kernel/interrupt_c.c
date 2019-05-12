@@ -3,8 +3,12 @@
 #include "sys/std_int_h.h"
 #include "kernel/interrupt_h.h"
 #include "kernel/io.h"
+#include "thread/thread_h.h"
+#include "kernel/debug_h.h"
 
-# define VECTOR_NUMBER  0x21
+#define EFLAGS_IF   0x00000200       // eflags寄存器中的if位为1
+#define GET_EFLAGS(EFLAG_VAR) asm volatile("pushfl; popl %0" : "=g" (EFLAG_VAR))
+#define VECTOR_NUMBER  0x21
 typedef void (*p_interrupt_handler)(int vector_number);
 p_interrupt_handler interrupt_handler_table[VECTOR_NUMBER];
 
@@ -144,25 +148,77 @@ static char keymap[][2] = {
 
 
 
+// 获取当前中断的状态
+enum interrupt_status get_interrupt_status() {
+   uint32_t eflags = 0;
+   GET_EFLAGS(eflags);
+   return (EFLAGS_IF & eflags) ? INTERRUPT_ON : INTERRUPT_OFF;
+}
+
+// 开中断并返回开中断前的状态
+enum interrupt_status interrupt_enable() {
+   enum interrupt_status old_status = get_interrupt_status();
+   if (INTERRUPT_OFF == old_status) {
+      asm volatile("sti");// 开中断,sti指令将IF位置1
+   }
+   return old_status;
+}
+
+// 关中断,并且返回关中断前的状态
+enum interrupt_status interrupt_disable() {
+   enum interrupt_status old_status = get_interrupt_status();
+   if (INTERRUPT_ON == old_status) {
+      asm volatile("cli" : : : "memory"); // 关中断,cli指令将IF位置0
+   }
+   return old_status;
+}
+
+// 设置中断状态
+enum interrupt_status set_interrupt_status(enum interrupt_status status) {
+   return status & INTERRUPT_ON ? interrupt_enable() : interrupt_disable();
+}
 
 
 
 
-/** 默认处理 **/
+// 默认处理
 void hander_default(int vector_number){
+    print_str("ERROR_default_hander  ");
     print_int_oct((unsigned int)vector_number);
-    print_str("ERROR_default_hander");
+
+    if (vector_number == 14) {	  // 若为Pagefault,将缺失的地址打印出来并悬停
+        unsigned int page_fault_vaddr = 0;
+        asm ("movl %%cr2, %0" : "=r" (page_fault_vaddr));	  // cr2是存放造成page_fault的地址
+        print_str("\npage fault addr is ");print_int_oct(page_fault_vaddr);
+    }
+    print_str("\n!!!!!!!      excetion message end    !!!!!!!!\n");
+    while(1);
 }
 
 /** 时钟中断 **/
 void handler_time(int vector_number){
-    if(number_time < 100){
-        number_time ++;
-    }else{
-        number_time = 0;
-        print_int_oct((unsigned int)vector_number);
-        print_str("time_handler");
+    // print_str("time_handle  ");
+    struct task_struct* cur_thread = running_thread();
+
+    ASSERT(cur_thread->stack_magic == (uint32_t)0x19870916);         // 检查栈是否溢出
+
+    cur_thread->elapsed_ticks++;	  // 记录此线程占用的cpu时间嘀
+    //ticks++;	  //从内核第一次处理时间中断后开始至今的滴哒数,内核态和用户态总共的嘀哒数
+
+    if (cur_thread->ticks == 0) {	  // 若进程时间片用完就开始调度新的进程上cpu
+      schedule();
+    } else {				  // 将当前进程的时间片-1
+      cur_thread->ticks--;
     }
+
+
+    // if(number_time < 100){
+    //     number_time ++;
+    // }else{
+    //     number_time = 0;
+    //     print_int_oct((unsigned int)vector_number);
+    //     print_str("time_handler");
+    // }
 }
 
 /** 键盘中断 **/
@@ -262,7 +318,7 @@ void register_int_all(){
 
 
 
-void init_interrupt(){
+void entry_init_interrupt(){
     register_int_all();
     setup_interrupt();
 

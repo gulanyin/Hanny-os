@@ -268,7 +268,7 @@ void init_pool(unsigned int all_mem){
 
 
 
-void init_memory(){
+void entry_init_memory(){
     // 根据存放在0x85000处的内存信息初始化内存管理
     int i = 0;
     int max_access_addr = 0; // 最大能访问到的内存, 最大不超过4GB

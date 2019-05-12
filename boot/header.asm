@@ -134,7 +134,8 @@ end_protect_model_gdt_opcode:
 align 8
 times 512 dd 0                      ;栈的大小为512个4 bytes
 ring0_stack:
-	dd ring0_stack,                 ;32位偏移地址
+    dd 0x1ff000   ; 2M内存前面空了一个页面，这个页面往前就是main线程的pcb
+	; dd ring0_stack,                 ;32位偏移地址
 	dw REG_0_DATA                   ;16位段选择符
 
 

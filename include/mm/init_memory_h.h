@@ -21,7 +21,7 @@ typedef struct _MEMORY_POOL{
 
 
 extern MEMORY_POOL  memory_pool_kernel, memory_pool_user;
-void init_memory();
+void entry_init_memory();
 void* get_kernel_pages(uint32_t page_cnt);
 
 #endif

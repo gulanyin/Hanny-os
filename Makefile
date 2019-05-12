@@ -14,7 +14,7 @@ output/boot/header.o: boot/header.asm
 	nasm -f elf $^ -o $@
 output/boot/system.elf: output/boot/header.o output/init/main.o output/kernel/print_s.o output/mm/init_memory.o \
 						output/kernel/debug.o output/kernel/string.o output/kernel/bitmap.o output/kernel/interrupt_c.o \
-						output/kernel/interrupt_s.o
+						output/kernel/interrupt_s.o output/kernel/list_c.o  output/thread/thread_c.o output/thread/thread_s.o
 	ld -m elf_i386 -Ttext 0x0  -o $@ $^
 
 
@@ -33,6 +33,9 @@ output/kernel/interrupt_c.o: kernel/interrupt_c.c
 output/kernel/interrupt_s.o: kernel/interrupt_s.asm
 	nasm -f elf $^ -o $@
 
+output/kernel/list_c.o: kernel/list_c.c
+	gcc $(GCC_FLAG) -c $^ -o $@
+
 
 
 # init
@@ -45,14 +48,24 @@ output/mm/init_memory.o: mm/init_memory.c
 	gcc $(GCC_FLAG) -c $^ -o $@
 
 
+
+# thread
+output/thread/thread_c.o: thread/thread_c.c
+	gcc $(GCC_FLAG) -c $^ -o $@
+output/thread/thread_s.o: thread/thread_s.asm
+	nasm -f elf $^ -o $@
+
+
 mk_dir:
 	if [ ! -d "output/boot" ]; then mkdir output/boot; fi
 	if [ ! -d "output/init" ];then mkdir output/init;fi
 	if [ ! -d "output/kernel" ];then mkdir output/kernel;fi
 	if [ ! -d "output/mm" ];then mkdir output/mm;fi
+	if [ ! -d "output/thread" ];then mkdir output/mm;fi
 
 run:
-	qemu-system-i386 -fda output/all.bin
+	qemu-system-i386 -m size=64M -fda output/all.bin
+	#qemu-system-i386 -fda output/all.bin
 
 
 disk:
@@ -62,10 +75,13 @@ clean:
 	rm -rf output/boot
 	rm -rf output/init
 	rm -rf output/kernel
+	rm -rf output/mm
+	rm -rf output/thread
 	if [ ! -d "output/boot" ]; then mkdir output/boot; fi
 	if [ ! -d "output/init" ];then mkdir output/init;fi
 	if [ ! -d "output/kernel" ];then mkdir output/kernel;fi
 	if [ ! -d "output/mm" ];then mkdir output/mm;fi
+	if [ ! -d "output/thread" ];then mkdir output/thread;fi
 
 test_m:
 	echo "sdfdf"
