@@ -69,7 +69,8 @@ mk_dir:
 	if [ ! -d "output/init" ];then mkdir output/init;fi
 	if [ ! -d "output/kernel" ];then mkdir output/kernel;fi
 	if [ ! -d "output/mm" ];then mkdir output/mm;fi
-	if [ ! -d "output/thread" ];then mkdir output/mm;fi
+	if [ ! -d "output/thread" ];then mkdir output/thread;fi
+	if [ ! -d "output/device" ];then mkdir output/device;fi
 
 run:
 	qemu-system-i386 -m size=64M -fda output/all.bin
@@ -85,11 +86,13 @@ clean:
 	rm -rf output/kernel
 	rm -rf output/mm
 	rm -rf output/thread
+	rm -rf output/all.bin
 	if [ ! -d "output/boot" ]; then mkdir output/boot; fi
 	if [ ! -d "output/init" ];then mkdir output/init;fi
 	if [ ! -d "output/kernel" ];then mkdir output/kernel;fi
 	if [ ! -d "output/mm" ];then mkdir output/mm;fi
 	if [ ! -d "output/thread" ];then mkdir output/thread;fi
+	if [ ! -d "output/device" ];then mkdir output/device;fi
 
 test_m:
 	echo "sdfdf"

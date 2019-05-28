@@ -29,7 +29,8 @@ void main(){
     thread_start("k_thread_a", 30, k_thread_a, "argA ");
     thread_start("k_thread_b", 10, k_thread_b, "argB ");
 
-
+    // 初始化控制带锁
+    entyr_console_init();
 
     // 中断设置
     entry_init_interrupt();
@@ -37,8 +38,8 @@ void main(){
 
     while (1) {
         /* code */
-        // print_str("main ");
-        console_str("main ");
+         //print_str("main ");
+         console_str("main22 ");
         asm volatile("hlt");
     }
 

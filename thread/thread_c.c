@@ -89,6 +89,7 @@ struct task_struct* thread_start(char* name, int prio, thread_func function, voi
     // pcb都位于内核空间,包括用户进程的pcb也是在内核空间
    struct task_struct* thread = get_kernel_pages(1);
 
+   //print_str("========start thread ");print_int_oct((uint32_t)thread);
    init_thread(thread, name, prio);
    thread_create(thread, function, func_arg);
 
@@ -113,7 +114,7 @@ static void make_main_thread(void) {
     // 在boot/headers.asm 中，初始化了一块内存栈，这个内存栈设为2M前倒数第二个页面， 即栈底为0x1ff000
    main_thread = running_thread();
 
-print_str("========main_thread ");print_int_oct((uint32_t)main_thread);
+   print_str("========main_thread ");print_int_oct((uint32_t)main_thread);
 
    init_thread(main_thread, "main", 31);
 
