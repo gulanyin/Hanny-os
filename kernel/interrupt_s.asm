@@ -42,21 +42,34 @@ interrupt_%1_entry:
     ; jmp interrupt_common
     ; call interrupt_exception_handler
     call [interrupt_handler_table+ %1*4]
-    add esp, 4   ; 平衡中断号
 
+
+    jmp interrupt_exit
+    ; popad
+    ; pop gs
+    ; pop fs
+    ; pop es
+    ; pop ds
+    ; add esp, 4   ; 平衡错误号error_code
+
+    ; mov al, 0x20  ; 中断结束
+    ; out 0xa0, al
+    ; out 0x20, al
+    ; iret
+
+%endmacro
+
+global interrupt_exit
+interrupt_exit:
+    add esp, 4   ; 平衡中断号
     popad
     pop gs
     pop fs
     pop es
     pop ds
     add esp, 4   ; 平衡错误号error_code
-
-    ; mov al, 0x20  ; 中断结束
-    ; out 0xa0, al
-    ; out 0x20, al
     iret
 
-%endmacro
 
 VECTOR 0x00, NO_ERROR_CODE
 VECTOR 0x01, NO_ERROR_CODE

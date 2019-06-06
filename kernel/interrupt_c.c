@@ -323,5 +323,5 @@ void entry_init_interrupt(){
     setup_interrupt();
 
     // 开中断
-    on_interrupt();
+    // on_interrupt();
 }

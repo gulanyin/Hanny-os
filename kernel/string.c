@@ -19,3 +19,14 @@ char* strcpy(char* dst_, const char* src_) {
    while((*dst_++ = *src_++));
    return r;
 }
+
+
+
+// 将src_起始的size个字节复制到dst_
+void memcpy(void* dst_, const void* src_, uint32_t size) {
+   ASSERT(dst_ != NULL && src_ != NULL);
+   uint8_t* dst = dst_;
+   const uint8_t* src = src_;
+   while (size-- > 0)
+      *dst++ = *src++;
+}

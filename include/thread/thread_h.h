@@ -4,6 +4,7 @@
 #include "sys/gloab_h.h"
 #include "sys/std_int_h.h"
 #include "kernel/list_h.h"
+#include "mm/memory_h.h"
 
 typedef void (*thread_func)(void*);
 
@@ -82,6 +83,9 @@ struct task_struct {
    LIST_ELEM all_list_tag;
 
    uint32_t* pgdir;              // 进程自己页表的虚拟地址
+
+   VIRTUAL_ADDRESS userprog_vaddr;  // 用户进程的虚拟地址
+
    uint32_t stack_magic;	 // 用这串数字做栈的边界标记,用于检测栈的溢出
 };
 
@@ -97,7 +101,7 @@ struct task_struct* running_thread();
 
 void thread_block(enum task_status status);
 void thread_unblock(struct task_struct* pthread);
-
-
+void init_thread(struct task_struct* pthread, char* name, int prio);
+void thread_create(struct task_struct* pthread, thread_func function, void* func_arg) ;
 
 #endif

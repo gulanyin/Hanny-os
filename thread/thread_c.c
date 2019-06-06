@@ -5,6 +5,7 @@
 #include "kernel/list_h.h"
 #include "kernel/interrupt_h.h"
 #include "kernel/string_h.h"
+#include "userprog/process_h.h"
 
 
 
@@ -154,6 +155,9 @@ void schedule(){
    print_str("  ========next ");print_int_oct((uint32_t)next);
    print_char('\n');
    next->status = TASK_RUNNING;
+
+   process_activate(next);
+
    switch_to(cur, next);
 
 }

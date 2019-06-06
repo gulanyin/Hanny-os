@@ -88,6 +88,7 @@ _start:
 
 ;新的gdt表, 增加几个描述符
 align 8
+global protect_model_gdt  ; 导出protect_model_gdt， 用户进程处设置tss段
 protect_model_gdt:
 	dw 0, 0, 0, 0
 
@@ -119,6 +120,28 @@ protect_model_gdt:
 	dw 0x8000 ;
 	dw 0x920B ;
 	dw 0x00c0 ;
+
+
+    ;第4个描述符： tss 段, 0环
+    dw 0x0067
+    dw 0x0000
+    dw 0x8900
+    dw 0x0000
+
+
+    ;第5个描述符： 3环代码 代码段
+    dw 0xffff
+	dw 0x0000
+	dw 0xfa00
+	dw 0x00cf
+
+
+
+    ;第6个描述符： 3环数据段,堆栈段
+    dw 0xffff
+	dw 0x0000
+	dw 0xf200
+	dw 0x00cf
 end_protect_model_gdt:
 
 

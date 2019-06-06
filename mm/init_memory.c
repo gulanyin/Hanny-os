@@ -5,18 +5,21 @@
 #include "kernel/string_h.h"
 #include "kernel/bitmap_h.h"
 #include "mm/init_memory_h.h"
+#include "mm/memory_h.h"
+#include "kernel/sync_h.h"
 
 #define PAGE_SIZE 4096
-#define PG_ATTRIBUTE_S_R_W_P 3   // u/s = 0, r/w=1, p=1
+// #define PG_ATTRIBUTE_S_R_W_P 3   // u/s = 0, r/w=1, p=1
+#define PG_ATTRIBUTE_S_R_W_P 7   // u/s = 1, r/w=1, p=1  进程切换页表的时候可以执行代码，否则访问出错
 #define PDE_INDEX(addr) ((addr & 0xffc00000) >> 22)
 #define PTE_INDEX(addr) ((addr & 0x003ff000) >> 12)
 
-#define	 PG_P_1	  1	// 页表项或页目录项存在属性位
-#define	 PG_P_0	  0	// 页表项或页目录项存在属性位
-#define	 PG_RW_R  0	// R/W 属性位值, 读/执行
-#define	 PG_RW_W  2	// R/W 属性位值, 读/写/执行
-#define	 PG_US_S  0	// U/S 属性位值, 系统级
-#define	 PG_US_U  4	// U/S 属性位值, 用户级
+// #define	 PG_P_1	  1	// 页表项或页目录项存在属性位
+// #define	 PG_P_0	  0	// 页表项或页目录项存在属性位
+// #define	 PG_RW_R  0	// R/W 属性位值, 读/执行
+// #define	 PG_RW_W  2	// R/W 属性位值, 读/写/执行
+// #define	 PG_US_S  0	// U/S 属性位值, 系统级
+// #define	 PG_US_U  4	// U/S 属性位值, 用户级
 
 /* 内存池标记,用于判断用哪个内存池 */
 enum pool_flags {
@@ -65,6 +68,14 @@ uint32_t* pde_virtual_address(uint32_t vaddr) {
    return pde;
 }
 
+
+/* 得到虚拟地址映射到的物理地址 */
+uint32_t addr_v2p(uint32_t vaddr) {
+   uint32_t* pte = pte_virtual_address(vaddr);
+/* (*pte)的值是页表所在的物理页框地址,
+ * 去掉其低12位的页表项属性+虚拟地址vaddr的低12位 */
+   return ((*pte & 0xfffff000) + (vaddr & 0x00000fff));
+}
 
 
 // 页表中添加虚拟地址virtual_address与物理地址physical_address的映射 */
@@ -168,11 +179,52 @@ void* malloc_page(enum pool_flags pf, uint32_t page_count) {
 
 //从内核物理内存池中申请pg_cnt页内存,成功则返回其虚拟地址,失败则返回NULL
 void* get_kernel_pages(uint32_t pg_cnt) {
-   void* vaddr =  malloc_page(PF_KERNEL, pg_cnt);
-   if (vaddr != NULL) {	   // 若分配的地址不为空,将页框清0后返回
+    lock_acquire(&kernel_pool.lock);
+    void* vaddr =  malloc_page(PF_KERNEL, pg_cnt);
+    if (vaddr != NULL) {	   // 若分配的地址不为空,将页框清0后返回
       memset(vaddr, 0, pg_cnt * PAGE_SIZE);
+    }
+    lock_release(&kernel_pool.lock);
+    return vaddr;
+}
+
+
+static void* palloc(PMEMORY_POOL m_pool) {
+   /* 扫描或设置位图要保证原子操作 */
+   int bit_idx = bitmap_scan(&m_pool->pool_bitmap, 1);    // 找一个物理页面
+   if (bit_idx == -1 ) {
+      return NULL;
    }
-   return vaddr;
+   bitmap_set(&m_pool->pool_bitmap, bit_idx, 1);	// 将此位bit_idx置1
+   uint32_t page_phyaddr = ((bit_idx * PAGE_SIZE) + m_pool->pool_physical_address_start);
+   return (void*)page_phyaddr;
+}
+
+void* get_a_page(int pf_type, uint32_t virtual_address){
+    enum pool_flags pf = (enum pool_flags) pf_type;
+
+    PMEMORY_POOL mem_pool = pf & PF_KERNEL ? &kernel_pool : &user_pool;
+    lock_acquire(&mem_pool->lock);
+
+    struct task_struct* cur = running_thread();
+    int32_t bit_idx = -1;
+
+    if(cur->pgdir !=NULL && pf == PF_USER){
+        bit_idx = (virtual_address - cur->userprog_vaddr.virtual_addr_start) / PAGE_SIZE;
+        ASSERT(bit_idx > 0);
+        bitmap_set(&cur->userprog_vaddr.virtual_addr_bitmap, bit_idx, 1);
+    }else if(cur->pgdir == NULL && pf == PF_KERNEL){
+        bit_idx = (virtual_address - kernel_virtual.virtual_addr_start) / PAGE_SIZE;
+        ASSERT(bit_idx > 0);
+        bitmap_set(&kernel_virtual.virtual_addr_bitmap, bit_idx, 1);
+    }else{
+        PANIC("get_a_page error! not know type");
+    }
+
+    void* page_phyaddr = palloc(mem_pool);
+    page_table_add((void*)virtual_address, page_phyaddr); // 在页表中做映射
+    lock_release(&mem_pool->lock);
+    return (void*)virtual_address;
 }
 
 
@@ -212,6 +264,9 @@ void init_pool(unsigned int all_mem){
 
     bitmap_init(&kernel_pool.pool_bitmap);
     bitmap_init(&user_pool.pool_bitmap);
+    lock_init(&kernel_pool.lock);
+    lock_init(&user_pool.lock);
+
     bitmap_init(&kernel_virtual.virtual_addr_bitmap);
 
     print_str("\nkernel_pool_bitmap_start ");print_int_oct((unsigned int)kernel_pool.pool_bitmap.start_addr);
