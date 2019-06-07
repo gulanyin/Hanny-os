@@ -5,6 +5,7 @@
 #include "device/console_h.h"
 #include "userprog/tss_h.h"
 #include "userprog/process_h.h"
+#include "user/syscall_h.h"
 
 
 void k_thread_a(void*);
@@ -62,6 +63,9 @@ void main(){
     console_str("process_execute ok\n ");
 
 
+    // 注册系统调用
+    init_all_syscall();
+
     //swhile(1);
     // 开启中断
     on_interrupt();
@@ -83,9 +87,9 @@ void main(){
 void k_thread_a(void* args) {
    while(1) {
       //print_str(args);
-      //console_str(args);
-      console_str("test_var_a");
-      console_int_oct(test_var_a);
+      console_str(args);
+      //console_str("test_var_a");
+      //console_int_oct(test_var_a);
       asm volatile("hlt");
    }
 }
@@ -94,9 +98,9 @@ void k_thread_a(void* args) {
 void k_thread_b(void* args) {
     while(1) {
        //print_str(args);
-       //console_str(args);
-       console_str("test_var_b");
-       console_int_oct(test_var_b);
+       console_str(args);
+       //console_str("test_var_b");
+       //console_int_oct(test_var_b);
        asm volatile("hlt");
     }
 }
@@ -105,14 +109,19 @@ void k_thread_b(void* args) {
 
 // 测试用户进程
 void u_prog_a(void) {
+
    while(1) {
-      test_var_a++;
+     // test_var_a++;
+     getpid();
    }
 }
 
 // 测试用户进程
 void u_prog_b(void) {
+    //getpid();
    while(1) {
-      test_var_b++;
+      // test_var_b++;
+      getpid();
+
    }
 }

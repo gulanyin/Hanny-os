@@ -76,6 +76,8 @@ struct task_struct {
    //此任务自上cpu运行后至今占用了多少cpu嘀嗒数,也就是此任务执行了多久
    uint32_t elapsed_ticks;
 
+   uint32_t pid;
+
    // general_tag的作用是用于线程在一般的队列中的结点
    LIST_ELEM general_tag;
 

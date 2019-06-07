@@ -15,7 +15,8 @@ output/boot/header.o: boot/header.asm
 output/boot/system.elf: output/boot/header.o output/init/main.o output/kernel/print_s.o output/mm/init_memory.o \
 						output/kernel/debug.o output/kernel/string.o output/kernel/bitmap.o output/kernel/interrupt_c.o \
 						output/kernel/interrupt_s.o output/kernel/list_c.o  output/thread/thread_c.o output/thread/thread_s.o \
-						output/kernel/sync_c.o output/device/console_c.o  output/userprog/tss_c.o output/userprog/process_c.o
+						output/kernel/sync_c.o output/device/console_c.o  output/userprog/tss_c.o output/userprog/process_c.o \
+						output/user/syscall_c.o
 	ld -m elf_i386 -Ttext 0x0  -o $@ $^
 
 
@@ -70,6 +71,11 @@ output/userprog/process_c.o: userprog/process_c.c
 	gcc $(GCC_FLAG) -c $^ -o $@
 
 
+# user
+output/user/syscall_c.o: user/syscall_c.c
+	gcc $(GCC_FLAG) -c $^ -o $@
+
+
 mk_dir:
 	if [ ! -d "output/boot" ]; then mkdir output/boot; fi
 	if [ ! -d "output/init" ];then mkdir output/init;fi
@@ -78,6 +84,7 @@ mk_dir:
 	if [ ! -d "output/thread" ];then mkdir output/thread;fi
 	if [ ! -d "output/device" ];then mkdir output/device;fi
 	if [ ! -d "output/userprog" ];then mkdir output/userprog;fi
+	if [ ! -d "output/user" ];then mkdir output/user;fi
 
 run:
 	qemu-system-i386 -m size=64M -fda output/all.bin
@@ -94,6 +101,7 @@ clean:
 	rm -rf output/mm
 	rm -rf output/thread
 	rm -rf output/userprog
+	rm -rf output/user
 	rm -rf output/all.bin
 	if [ ! -d "output/boot" ]; then mkdir output/boot; fi
 	if [ ! -d "output/init" ];then mkdir output/init;fi
@@ -102,6 +110,7 @@ clean:
 	if [ ! -d "output/thread" ];then mkdir output/thread;fi
 	if [ ! -d "output/device" ];then mkdir output/device;fi
 	if [ ! -d "output/userprog" ];then mkdir output/userprog;fi
+	if [ ! -d "output/user" ];then mkdir output/user;fi
 
 test_m:
 	echo "sdfdf"

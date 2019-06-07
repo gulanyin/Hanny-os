@@ -6,6 +6,7 @@
 #include "kernel/interrupt_h.h"
 #include "kernel/string_h.h"
 #include "userprog/process_h.h"
+#include "kernel/sync_h.h"
 
 
 
@@ -20,6 +21,23 @@ struct task_struct* main_thread;    // 主线程PCB
 LIST thread_ready_list;	            // 就绪队列
 LIST thread_all_list;	            // 所有任务队列
 static PLIST_ELEM thread_tag;       // 用于保存队列中的线程结点
+
+
+// 自动分配线程id
+LOCK pid_lock;
+
+
+// 分配pit
+static uint32_t allocate_pid (){
+    static uint32_t next_pid = 0;
+    lock_acquire(&pid_lock);
+    next_pid++;
+    lock_release(&pid_lock);
+    return next_pid;
+}
+
+
+
 
 
 // 当前线程的pcb，pcb总是在一个页内，根据栈来取
@@ -66,6 +84,8 @@ void init_thread(struct task_struct* pthread, char* name, int prio) {
    pthread->elapsed_ticks = 0;
    pthread->pgdir = NULL;
    pthread->stack_magic = 0x19870916;	  // 自定义的魔数
+
+   pthread->pid = allocate_pid();
 }
 
 
@@ -197,6 +217,7 @@ void entry_init_thread(){
     print_str("thread_init start\n");
     init_list(&thread_ready_list);
     init_list(&thread_all_list);
+    lock_init(&pid_lock);
     print_str("==&thread_ready_list ");print_int_oct((uint32_t)&thread_ready_list);
     print_str("==&thread_all_list ");print_int_oct((uint32_t)&thread_all_list);
     // 将当前main函数创建为线程

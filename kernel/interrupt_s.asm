@@ -1,6 +1,6 @@
 bits 32
 
-NUMBER_OF_INTTERRUPT_DESCRIPTOR equ 0x22    ; 已安装中断数
+NUMBER_OF_INTTERRUPT_DESCRIPTOR equ 0x23    ; 已安装中断数
 LATCH equ 11931 ;  1193180 / 11931 = 100.0067052216914, 一秒钟约100次中断，时钟中断处理函数中当计数器等于100打印一次
 
 ; cup 如果自动压入错误码，则nop，没有压入错误码，则用 push 0 ，后续统一 add esp, 4
@@ -12,6 +12,7 @@ LATCH equ 11931 ;  1193180 / 11931 = 100.0067052216914, 一秒钟约100次中断
 ; 设置中断
 ; ------------------------------------
 extern interrupt_handler_table
+extern interrupt_handler_syscall_table
 
 %macro VECTOR 2
 interrupt_%1_entry:
@@ -122,6 +123,41 @@ VECTOR 0x21, NO_ERROR_CODE
 ;     out 0x20, al
 ;     iret
 
+
+
+
+; 系统调用中断处理
+interrupt_0x22_entry:
+    ; cup自动压入中断现场
+    ; push ss
+    ; push esp
+    ; push flags
+    ; push cs
+    ; push eip
+
+    ;error_code, cup自动压入或者手动压入0
+    push 0
+    push ds
+    push es
+    push fs
+    push gs
+    pushad  ; PUSHAD指令压入32位寄存器,其入栈顺序是: EAX,ECX,EDX,EBX,ESP,EBP,ESI,EDI
+
+
+    push 0x22   ; 中断号
+    ; jmp interrupt_common
+    ; call interrupt_exception_handler
+    call [interrupt_handler_syscall_table+ eax*4]
+    mov [esp+ 8*4], eax  ; 返回值放入中断栈中，
+
+
+    jmp interrupt_exit
+
+
+
+
+
+
 interrupt_handler:
     dd interrupt_0x00_entry
     dd interrupt_0x01_entry
@@ -161,6 +197,7 @@ interrupt_handler:
 
     dd interrupt_0x20_entry
     dd interrupt_0x21_entry
+    dd interrupt_0x22_entry  ; 系统调用中断函数处理
 
 ; 中断描述符表
 align 8
@@ -249,7 +286,7 @@ set_interrupt_desc_table:
     lea edi, [protect_model_idt]        ; edi 存放protect_model_idt 地址
     lea esi, [interrupt_handler]        ;中断函数地址
 
-    mov ecx, 0                          ; 21个中断描述符
+    mov ecx, 0                          ; 0x22个中断描述符, 最后一个是int 0x22 软中断，3环下访问
 
     ;一个中断描述符
     .repeat_set_idt_desc:
@@ -265,6 +302,19 @@ set_interrupt_desc_table:
     inc ecx
     cmp ecx, NUMBER_OF_INTTERRUPT_DESCRIPTOR                     ; 已经设置了多少个中断描述符
     jl .repeat_set_idt_desc
+
+
+    ; 系统调用，3环可以访问的中断
+    lea edi, [protect_model_idt + (NUMBER_OF_INTTERRUPT_DESCRIPTOR -1 )* 8]        ; edi 存放protect_model_idt 地址
+    lea esi, [interrupt_handler + (NUMBER_OF_INTTERRUPT_DESCRIPTOR -1 )* 4]        ;中断函数地址
+    mov edx, [esi]                     ; 中断函数地址存入edx
+    mov eax, 0x00080000                ; eax高16位设置段选择符0x0008
+    mov ax, dx                         ; eax存放了一个中断描述符的低32位：段选择符 + 偏移地址(低16位)
+    mov dx, 0xEE00                      ; 中断门 1110 1110 0000 0000; 3环系统调用
+    mov [edi], eax
+    mov [edi + 4], edx
+
+
 
     lidt [protect_model_idt_opcode]
 

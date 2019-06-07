@@ -83,6 +83,8 @@ static void page_table_add(void* _virtual_address, void* _physical_address) {
    uint32_t virtual_address = (uint32_t)_virtual_address, physical_address = (uint32_t)_physical_address;
    uint32_t* pde = pde_virtual_address(virtual_address);
    uint32_t* pte = pte_virtual_address(virtual_address);
+   print_str("(void*)pde ");print_int_oct((int)pde );
+   print_str("pte ");print_int_oct( (int)pte );
 
    /************************   注意   *************************
     *
@@ -109,7 +111,12 @@ static void page_table_add(void* _virtual_address, void* _physical_address) {
       // 页表中用到的页框一律从内核空间分配
       uint32_t pde_phyaddr = (uint32_t)alloc_memory(&kernel_pool);
 
-      *pde = (physical_address | PG_US_U | PG_RW_W | PG_P_1);
+      //*pde = (physical_address | PG_US_U | PG_RW_W | PG_P_1);
+      // 此处physical_address会导致切换到进程中的时候，三环线程所用的栈跟页表是同一个内存页，三环线程压栈后破坏了页表，再次访问该
+      // 栈区的时候就会GP
+
+
+      *pde = (pde_phyaddr | PG_US_U | PG_RW_W | PG_P_1);
 
       /* 分配到的物理页地址pde_phyaddr对应的物理内存清0,
        * 避免里面的陈旧数据变成了页表项,从而让页表混乱.
@@ -213,10 +220,12 @@ void* get_a_page(int pf_type, uint32_t virtual_address){
         bit_idx = (virtual_address - cur->userprog_vaddr.virtual_addr_start) / PAGE_SIZE;
         ASSERT(bit_idx > 0);
         bitmap_set(&cur->userprog_vaddr.virtual_addr_bitmap, bit_idx, 1);
+        print_str("cur->pgdir !=NULL && pf == PF_USER ");
     }else if(cur->pgdir == NULL && pf == PF_KERNEL){
         bit_idx = (virtual_address - kernel_virtual.virtual_addr_start) / PAGE_SIZE;
         ASSERT(bit_idx > 0);
         bitmap_set(&kernel_virtual.virtual_addr_bitmap, bit_idx, 1);
+        print_str("cur->pgdir !=NULL && pf == PF_USER ");
     }else{
         PANIC("get_a_page error! not know type");
     }
@@ -224,6 +233,9 @@ void* get_a_page(int pf_type, uint32_t virtual_address){
     void* page_phyaddr = palloc(mem_pool);
     page_table_add((void*)virtual_address, page_phyaddr); // 在页表中做映射
     lock_release(&mem_pool->lock);
+    print_str("(void*)virtual_address ");print_int_oct((int)virtual_address );
+    print_str("page_phyaddr ");print_int_oct( (int)page_phyaddr );
+
     return (void*)virtual_address;
 }
 
