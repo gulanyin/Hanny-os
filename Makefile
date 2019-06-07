@@ -16,7 +16,7 @@ output/boot/system.elf: output/boot/header.o output/init/main.o output/kernel/pr
 						output/kernel/debug.o output/kernel/string.o output/kernel/bitmap.o output/kernel/interrupt_c.o \
 						output/kernel/interrupt_s.o output/kernel/list_c.o  output/thread/thread_c.o output/thread/thread_s.o \
 						output/kernel/sync_c.o output/device/console_c.o  output/userprog/tss_c.o output/userprog/process_c.o \
-						output/user/syscall_c.o
+						output/user/syscall_c.o output/user/stdio_c.o
 	ld -m elf_i386 -Ttext 0x0  -o $@ $^
 
 
@@ -74,7 +74,8 @@ output/userprog/process_c.o: userprog/process_c.c
 # user
 output/user/syscall_c.o: user/syscall_c.c
 	gcc $(GCC_FLAG) -c $^ -o $@
-
+output/user/stdio_c.o: user/stdio_c.c
+	gcc $(GCC_FLAG) -c $^ -o $@
 
 mk_dir:
 	if [ ! -d "output/boot" ]; then mkdir output/boot; fi

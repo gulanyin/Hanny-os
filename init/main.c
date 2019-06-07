@@ -6,6 +6,7 @@
 #include "userprog/tss_h.h"
 #include "userprog/process_h.h"
 #include "user/syscall_h.h"
+#include "user/stdio_h.h"
 
 
 void k_thread_a(void*);
@@ -112,7 +113,7 @@ void u_prog_a(void) {
 
    while(1) {
      // test_var_a++;
-     getpid();
+     printf("%s %c %x %d", "printf pid is", ' ',  getpid(), -10);
    }
 }
 
@@ -121,7 +122,8 @@ void u_prog_b(void) {
     //getpid();
    while(1) {
       // test_var_b++;
-      getpid();
+      //printf("printf pid is : %x", getpid());
+      printf("%s %c %x %d", "printf pid is", ' ',  getpid(), -10);
 
    }
 }

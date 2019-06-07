@@ -5,4 +5,5 @@
 
 void init_all_syscall();
 uint32_t getpid();
+uint32_t write(char* str) ;
 #endif

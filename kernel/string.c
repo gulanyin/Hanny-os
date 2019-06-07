@@ -30,3 +30,11 @@ void memcpy(void* dst_, const void* src_, uint32_t size) {
    while (size-- > 0)
       *dst++ = *src++;
 }
+
+// 返回字符串长度
+uint32_t strlen(const char* str) {
+   ASSERT(str != NULL);
+   const char* p = str;
+   while(*p++);
+   return (p - str - 1);
+}

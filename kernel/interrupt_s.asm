@@ -147,7 +147,11 @@ interrupt_0x22_entry:
     push 0x22   ; 中断号
     ; jmp interrupt_common
     ; call interrupt_exception_handler
+    push edx   ; 系统调用中第3个参数
+    push ecx   ; 系统调用中第2个参数
+    push ebx   ; 系统调用中第1个参数
     call [interrupt_handler_syscall_table+ eax*4]
+    add esp, 12
     mov [esp+ 8*4], eax  ; 返回值放入中断栈中，
 
 
