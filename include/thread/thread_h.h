@@ -5,6 +5,7 @@
 #include "sys/std_int_h.h"
 #include "kernel/list_h.h"
 #include "mm/memory_h.h"
+#include "mm/mem_desc_h.h"
 
 typedef void (*thread_func)(void*);
 
@@ -87,6 +88,7 @@ struct task_struct {
    uint32_t* pgdir;              // 进程自己页表的虚拟地址
 
    VIRTUAL_ADDRESS userprog_vaddr;  // 用户进程的虚拟地址
+   struct mem_block_desc u_block_desc[DESC_COUNT];
 
    uint32_t stack_magic;	 // 用这串数字做栈的边界标记,用于检测栈的溢出
 };

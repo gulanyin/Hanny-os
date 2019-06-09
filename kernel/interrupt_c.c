@@ -202,6 +202,7 @@ void handler_time(int vector_number){
 
     ASSERT(cur_thread->stack_magic == (uint32_t)0x19870916);         // 检查栈是否溢出
 
+
     cur_thread->elapsed_ticks++;	  // 记录此线程占用的cpu时间嘀
     //ticks++;	  //从内核第一次处理时间中断后开始至今的滴哒数,内核态和用户态总共的嘀哒数
 

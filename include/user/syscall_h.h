@@ -6,4 +6,6 @@
 void init_all_syscall();
 uint32_t getpid();
 uint32_t write(char* str) ;
+void free(void* address);
+void* malloc(uint32_t size);
 #endif

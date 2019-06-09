@@ -7,6 +7,7 @@
 #include "kernel/bitmap_h.h"
 #include "device/console_h.h"
 #include "userprog/tss_h.h"
+#include "mm/mem_desc_h.h"
 
 #define DIV_ROUND_UP(X, STEP) ((X + STEP - 1) / (STEP))
 
@@ -151,6 +152,7 @@ void process_execute(void* filename, char* name){
     create_user_virtual_bitmap(p_thread);
     thread_create(p_thread, start_process, filename);
     p_thread->pgdir = create_page_dir();
+    block_desc_init(p_thread->u_block_desc);
 
 
     enum interrupt_status old_status = interrupt_disable();

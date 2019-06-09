@@ -77,6 +77,7 @@ void main(){
          //print_str("main ");
          console_str("main22 ");
         asm volatile("hlt");
+         while(1);
     }
 
 
@@ -87,22 +88,37 @@ void main(){
 // k_thread_a 函数
 void k_thread_a(void* args) {
    while(1) {
-      //print_str(args);
-      console_str(args);
+
+
+       console_str(args);
+       void* addr1 = sys_malloc(33);
+       console_str("addr1 ");
+       console_int_oct((int)addr1);
+       sys_free(addr1);
+
+       console_str(args);
+       void* addr2 = sys_malloc(33);
+       console_str("addr2 ");
+       console_int_oct((int)addr2);
+       sys_free(addr2);
+
       //console_str("test_var_a");
       //console_int_oct(test_var_a);
       asm volatile("hlt");
+      while(1);
    }
 }
 
 // k_thread_b 函数
 void k_thread_b(void* args) {
     while(1) {
-       //print_str(args);
-       console_str(args);
+        console_str(args);
+        void* addr = sys_malloc(33);
+        console_int_oct((int)addr);
        //console_str("test_var_b");
        //console_int_oct(test_var_b);
        asm volatile("hlt");
+       while(1);
     }
 }
 
@@ -113,7 +129,17 @@ void u_prog_a(void) {
 
    while(1) {
      // test_var_a++;
+
      printf("%s %c %x %d", "printf pid is", ' ',  getpid(), -10);
+     void* addr1 = malloc(33);
+     free(addr1);
+     void* addr2 = malloc(33);
+
+
+     // void* addr3 = malloc(33);
+     printf("addr1 %d addr2 %d", (int)addr1, (int)addr2);
+
+     while(1);
    }
 }
 
@@ -124,6 +150,10 @@ void u_prog_b(void) {
       // test_var_b++;
       //printf("printf pid is : %x", getpid());
       printf("%s %c %x %d", "printf pid is", ' ',  getpid(), -10);
+      void* addr1 = malloc(33);
+      void* addr2 = malloc(33);
+      printf("addr1 %d addr2 %d", (int)addr1, (int)addr2);
+      while(1);
 
    }
 }

@@ -34,5 +34,7 @@ void entry_init_memory();
 void* get_kernel_pages(uint32_t page_cnt);
 uint32_t addr_v2p(uint32_t vaddr);
 void* get_a_page(int pf_type, uint32_t virtual_address);
+void* sys_malloc(uint32_t size);
+void sys_free(void* ptr) ;
 
 #endif
