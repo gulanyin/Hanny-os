@@ -29,6 +29,7 @@ uint32_t vsprintf(char* str, const char* format, va_list ap) {
    const char* index_ptr = format;
    char index_char = *index_ptr;
    int32_t arg_int;
+   uint32_t u_arg_int;
    char* arg_str;
    while(index_char) {
       if (index_char != '%') {
@@ -59,6 +60,11 @@ uint32_t vsprintf(char* str, const char* format, va_list ap) {
     	    itoa(arg_int, &buf_ptr, 10);
     	    index_char = *(++index_ptr);
     	    break;
+        case 'u':
+           u_arg_int = (unsigned  int)va_arg(ap, int);
+           itoa(u_arg_int, &buf_ptr, 10);
+           index_char = *(++index_ptr);
+           break;
          case 'x':
     	    arg_int = va_arg(ap, int);
     	    itoa(arg_int, &buf_ptr, 16);
@@ -70,8 +76,20 @@ uint32_t vsprintf(char* str, const char* format, va_list ap) {
 
 }
 
-/* 格式化输出字符串format */
+// 用户态格式化输出字符串format
 uint32_t printf(const char* format, ...) {
+   va_list args;
+   va_start(args, format);	       // 使args指向format
+   char buf[256] = {0};	       // 用于存储拼接后的字符串
+   vsprintf(buf, format, args);
+   va_end(args);
+   return write(buf);
+}
+
+
+
+// 内核格式化输出字符串format
+uint32_t printk(const char* format, ...) {
    va_list args;
    va_start(args, format);	       // 使args指向format
    char buf[256] = {0};	       // 用于存储拼接后的字符串

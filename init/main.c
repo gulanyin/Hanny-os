@@ -90,17 +90,19 @@ void k_thread_a(void* args) {
    while(1) {
 
 
-       console_str(args);
+       // console_str(args);
        void* addr1 = sys_malloc(33);
-       console_str("addr1 ");
-       console_int_oct((int)addr1);
+       // console_str("addr1 ");
+       // console_int_oct((int)addr1);
        sys_free(addr1);
 
-       console_str(args);
+       // console_str(args);
        void* addr2 = sys_malloc(33);
-       console_str("addr2 ");
-       console_int_oct((int)addr2);
+       // console_str("addr2 ");
+       // console_int_oct((int)addr2);
        sys_free(addr2);
+
+       printk("%s addr1 %u addr2 %u", args, (uint32_t)addr1, (uint32_t)addr2);
 
       //console_str("test_var_a");
       //console_int_oct(test_var_a);
