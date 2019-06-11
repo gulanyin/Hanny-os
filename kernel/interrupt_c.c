@@ -8,12 +8,12 @@
 
 #define EFLAGS_IF   0x00000200       // eflags寄存器中的if位为1
 #define GET_EFLAGS(EFLAG_VAR) asm volatile("pushfl; popl %0" : "=g" (EFLAG_VAR))
-#define VECTOR_NUMBER  0x21
+#define VECTOR_NUMBER  0x30
 typedef void (*p_interrupt_handler)(int vector_number);
 p_interrupt_handler interrupt_handler_table[VECTOR_NUMBER];
 
 static int number_time = 0;   // 时钟滴答数
-
+uint32_t kernel_ticks = 0;
 
 
 /**   键盘中断   **/
@@ -204,7 +204,7 @@ void handler_time(int vector_number){
 
 
     cur_thread->elapsed_ticks++;	  // 记录此线程占用的cpu时间嘀
-    //ticks++;	  //从内核第一次处理时间中断后开始至今的滴哒数,内核态和用户态总共的嘀哒数
+    kernel_ticks++;	  //从内核第一次处理时间中断后开始至今的滴哒数,内核态和用户态总共的嘀哒数
 
     if (cur_thread->ticks == 0) {	  // 若进程时间片用完就开始调度新的进程上cpu
       schedule();
@@ -303,9 +303,17 @@ void register_handler(int vector_number, p_interrupt_handler haneler){
     interrupt_handler_table[vector_number] = haneler;
 }
 
+
+void register_extern_handler(int vector_number, void* _haneler){
+    p_interrupt_handler  haneler = (p_interrupt_handler)_haneler;
+    interrupt_handler_table[vector_number] = haneler;
+}
+
+
+
 void register_int_all(){
     int i = 0;
-    for(i=0; i<0x20; i++){
+    for(i=0; i<VECTOR_NUMBER; i++){
         register_handler(i, hander_default);
     }
 

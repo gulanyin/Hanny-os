@@ -60,7 +60,14 @@ static void kernel_thread(thread_func function, void* func_arg) {
 
 
 
-
+/* 系统空闲时运行的线程 */
+static void idle(void* arg __attribute__ ((unused))) {
+   while(1) {
+      thread_block(TASK_BLOCKED);
+      //执行hlt时必须要保证目前处在开中断的情况下
+      asm volatile ("sti; hlt" : : : "memory");
+   }
+}
 
 
 
@@ -154,7 +161,7 @@ void schedule(){
 
     // 当前线程
     struct task_struct* cur = running_thread();
-    print_str("\n========cur---cur ");print_int_oct((uint32_t)cur);
+    //print_str("\n========cur---cur ");print_int_oct((uint32_t)cur);
     if (cur->status == TASK_RUNNING) {
         // 若此线程只是cpu时间片到了,将其加入到就绪队列尾
         ASSERT(!elem_find(&thread_ready_list, &cur->general_tag));
@@ -172,8 +179,8 @@ void schedule(){
    thread_tag = list_pop(&thread_ready_list);
    // struct task_struct* next = (struct task_struct*) (   0xfffff000 & ((uint32_t)&thread_tag)  );
    struct task_struct* next = (struct task_struct*) (   0xfffff000 & ((uint32_t)thread_tag)  );
-   print_str("  ========next ");print_int_oct((uint32_t)next);
-   print_char('\n');
+  // print_str("  ========next ");print_int_oct((uint32_t)next);
+   print_char('s');
    next->status = TASK_RUNNING;
 
    process_activate(next);
@@ -208,6 +215,18 @@ void thread_unblock(struct task_struct* pthread) {
       list_push(&thread_ready_list, &pthread->general_tag);    // 放到队列的最前面,使其尽快得到调度
       pthread->status = TASK_READY;
    }
+   set_interrupt_status(old_status);
+}
+
+
+/* 主动让出cpu,换其它线程运行 */
+void thread_yield(void) {
+   struct task_struct* cur = running_thread();
+   enum interrupt_status old_status = interrupt_disable();
+   ASSERT(!elem_find(&thread_ready_list, &cur->general_tag));
+   list_append(&thread_ready_list, &cur->general_tag);
+   cur->status = TASK_READY;
+   schedule();
    set_interrupt_status(old_status);
 }
 

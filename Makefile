@@ -16,7 +16,7 @@ output/boot/system.elf: output/boot/header.o output/init/main.o output/kernel/pr
 						output/kernel/debug.o output/kernel/string.o output/kernel/bitmap.o output/kernel/interrupt_c.o \
 						output/kernel/interrupt_s.o output/kernel/list_c.o  output/thread/thread_c.o output/thread/thread_s.o \
 						output/kernel/sync_c.o output/device/console_c.o  output/userprog/tss_c.o output/userprog/process_c.o \
-						output/user/syscall_c.o output/user/stdio_c.o
+						output/user/syscall_c.o output/user/stdio_c.o output/device/ide_c.o output/device/timer_c.o
 	ld -m elf_i386 -Ttext 0x0  -o $@ $^
 
 
@@ -63,6 +63,11 @@ output/thread/thread_s.o: thread/thread_s.asm
 #divice
 output/device/console_c.o: device/console_c.c
 	gcc $(GCC_FLAG) -c $^ -o $@
+output/device/ide_c.o: device/ide_c.c
+	gcc $(GCC_FLAG) -c $^ -o $@
+output/device/timer_c.o: device/timer_c.c
+	gcc $(GCC_FLAG) -c $^ -o $@
+
 
 # userprog
 output/userprog/tss_c.o: userprog/tss_c.c
@@ -88,7 +93,8 @@ mk_dir:
 	if [ ! -d "output/user" ];then mkdir output/user;fi
 
 run:
-	qemu-system-i386 -m size=64M -fda output/all.bin
+	# qemu-system-i386 -m size=64M -fda output/all.bin
+	qemu-system-i386 -m size=64M -boot order=a -fda output\all.bin -hda output\image02.img
 	#qemu-system-i386 -fda output/all.bin
 
 
@@ -101,7 +107,8 @@ clean:
 	rm -rf output/kernel
 	rm -rf output/mm
 	rm -rf output/thread
-	rm -rf output/userprog
+	rm -rf output/thread
+	rm -rf output/device
 	rm -rf output/user
 	rm -rf output/all.bin
 	if [ ! -d "output/boot" ]; then mkdir output/boot; fi

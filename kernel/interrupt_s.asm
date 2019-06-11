@@ -1,6 +1,6 @@
 bits 32
 
-NUMBER_OF_INTTERRUPT_DESCRIPTOR equ 0x23    ; 已安装中断数
+NUMBER_OF_INTTERRUPT_DESCRIPTOR equ 0x31    ; 已安装中断数
 LATCH equ 11931 ;  1193180 / 11931 = 100.0067052216914, 一秒钟约100次中断，时钟中断处理函数中当计数器等于100打印一次
 
 ; cup 如果自动压入错误码，则nop，没有压入错误码，则用 push 0 ，后续统一 add esp, 4
@@ -106,8 +106,22 @@ VECTOR 0x1d, NO_ERROR_CODE
 VECTOR 0x1e, NO_ERROR_CODE
 VECTOR 0x1f, NO_ERROR_CODE
 
-VECTOR 0x20, NO_ERROR_CODE
-VECTOR 0x21, NO_ERROR_CODE
+VECTOR 0x20, NO_ERROR_CODE   ;时钟中断对应的入口
+VECTOR 0x21, NO_ERROR_CODE   ;键盘中断对应的入口
+VECTOR 0x22, NO_ERROR_CODE	;级联用的
+VECTOR 0x23, NO_ERROR_CODE	;串口2对应的入口
+VECTOR 0x24, NO_ERROR_CODE	;串口1对应的入口
+VECTOR 0x25, NO_ERROR_CODE	;并口2对应的入口
+VECTOR 0x26, NO_ERROR_CODE	;软盘对应的入口
+VECTOR 0x27, NO_ERROR_CODE	;并口1对应的入口
+VECTOR 0x28, NO_ERROR_CODE	;实时时钟对应的入口
+VECTOR 0x29, NO_ERROR_CODE	;重定向
+VECTOR 0x2a, NO_ERROR_CODE	;保留
+VECTOR 0x2b, NO_ERROR_CODE	;保留
+VECTOR 0x2c, NO_ERROR_CODE	;ps/2鼠标
+VECTOR 0x2d, NO_ERROR_CODE	;fpu浮点单元异常
+VECTOR 0x2e, NO_ERROR_CODE	;硬盘
+VECTOR 0x2f, NO_ERROR_CODE	;保留
 
 ; interrupt_0:
 ;     push 0x0
@@ -127,7 +141,7 @@ VECTOR 0x21, NO_ERROR_CODE
 
 
 ; 系统调用中断处理
-interrupt_0x22_entry:
+interrupt_0x30_entry:
     ; cup自动压入中断现场
     ; push ss
     ; push esp
@@ -144,7 +158,7 @@ interrupt_0x22_entry:
     pushad  ; PUSHAD指令压入32位寄存器,其入栈顺序是: EAX,ECX,EDX,EBX,ESP,EBP,ESI,EDI
 
 
-    push 0x22   ; 中断号
+    push 0x30   ; 中断号
     ; jmp interrupt_common
     ; call interrupt_exception_handler
     push edx   ; 系统调用中第3个参数
@@ -201,7 +215,23 @@ interrupt_handler:
 
     dd interrupt_0x20_entry
     dd interrupt_0x21_entry
-    dd interrupt_0x22_entry  ; 系统调用中断函数处理
+    dd interrupt_0x22_entry
+    dd interrupt_0x23_entry
+    dd interrupt_0x24_entry
+    dd interrupt_0x25_entry
+    dd interrupt_0x26_entry
+    dd interrupt_0x27_entry
+    dd interrupt_0x28_entry
+    dd interrupt_0x29_entry
+    dd interrupt_0x2a_entry
+    dd interrupt_0x2b_entry
+    dd interrupt_0x2c_entry
+    dd interrupt_0x2d_entry
+    dd interrupt_0x2e_entry
+    dd interrupt_0x2f_entry
+
+
+    dd interrupt_0x30_entry  ; 系统调用
 
 ; 中断描述符表
 align 8

@@ -30,7 +30,7 @@ void register_syscall_handler(int syscall_number, void* _haneler){
 #define _syscall0(NUMBER) ({				       \
    int retval;					               \
    asm volatile (					       \
-   "int $0x22"						       \
+   "int $0x30"						       \
    : "=a" (retval)					       \
    : "a" (NUMBER)					       \
    : "memory"						       \
@@ -43,7 +43,7 @@ void register_syscall_handler(int syscall_number, void* _haneler){
 #define _syscall1(NUMBER, ARG1) ({			       \
    int retval;					               \
    asm volatile (					       \
-   "int $0x22"						       \
+   "int $0x30"						       \
    : "=a" (retval)					       \
    : "a" (NUMBER), "b" (ARG1)				       \
    : "memory"						       \

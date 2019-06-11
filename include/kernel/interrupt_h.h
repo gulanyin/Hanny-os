@@ -19,6 +19,7 @@ enum interrupt_status interrupt_disable();
 enum interrupt_status set_interrupt_status(enum interrupt_status status);
 void setup_interrupt();
 void entry_init_interrupt();
+void register_extern_handler(int vector_number, void* _haneler);
 #endif
 
 
