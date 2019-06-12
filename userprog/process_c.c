@@ -164,7 +164,7 @@ void process_execute(void* filename, char* name){
     list_append(&thread_all_list, &p_thread->all_list_tag);
     set_interrupt_status(old_status);
 
-    console_str("process_execute  ");console_int_oct((uint32_t)p_thread);
-    console_str("addr_v2p  ");console_int_oct(addr_v2p((uint32_t)p_thread));
-    console_str("\n");
+    //console_str("process_execute  ");console_int_oct((uint32_t)p_thread);
+    //console_str("addr_v2p  ");console_int_oct(addr_v2p((uint32_t)p_thread));
+    //console_str("\n");
 }

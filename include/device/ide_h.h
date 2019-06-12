@@ -55,4 +55,13 @@ struct ide_channel {
 void ide_init(void);
 extern uint8_t channel_cnt;
 extern struct ide_channel channels[];
+extern LIST partition_list;
+
+// 从硬盘读取sec_cnt个扇区到buf
+void ide_read(struct disk* hd, uint32_t lba, void* buf, uint32_t sec_cnt);
+// 将buf中sec_cnt扇区数据写入硬盘
+void ide_write(struct disk* hd, uint32_t lba, void* buf, uint32_t sec_cnt);
+
+
+
 #endif

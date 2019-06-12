@@ -95,4 +95,5 @@ void init_all_syscall(){
     register_syscall_handler(SYSCALL_WIRTE, syscall_wirte);
     register_syscall_handler(SYSCALL_MALLOC, sys_malloc);
     register_syscall_handler(SYSCALL_FREE, sys_free);
+    console_str("init_all_syscall ok");
 }

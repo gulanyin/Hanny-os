@@ -1,6 +1,6 @@
 GCC_FLAG = -fno-stack-protector -m32 -I include -nostdinc -fno-builtin
 
-output/all.bin: output/boot/boots.bin output/boot/setup.bin output/boot/system.bin
+output_result/all.bin: output/boot/boots.bin output/boot/setup.bin output/boot/system.bin
 	cat $^ > $@
 
 # boot/
@@ -16,7 +16,8 @@ output/boot/system.elf: output/boot/header.o output/init/main.o output/kernel/pr
 						output/kernel/debug.o output/kernel/string.o output/kernel/bitmap.o output/kernel/interrupt_c.o \
 						output/kernel/interrupt_s.o output/kernel/list_c.o  output/thread/thread_c.o output/thread/thread_s.o \
 						output/kernel/sync_c.o output/device/console_c.o  output/userprog/tss_c.o output/userprog/process_c.o \
-						output/user/syscall_c.o output/user/stdio_c.o output/device/ide_c.o output/device/timer_c.o
+						output/user/syscall_c.o output/user/stdio_c.o output/device/ide_c.o output/device/timer_c.o \
+						output/file_system/fs_c.o
 	ld -m elf_i386 -Ttext 0x0  -o $@ $^
 
 
@@ -82,6 +83,12 @@ output/user/syscall_c.o: user/syscall_c.c
 output/user/stdio_c.o: user/stdio_c.c
 	gcc $(GCC_FLAG) -c $^ -o $@
 
+
+# file_system
+output/file_system/fs_c.o: file_system/fs_c.c
+	gcc $(GCC_FLAG) -c $^ -o $@
+
+
 mk_dir:
 	if [ ! -d "output/boot" ]; then mkdir output/boot; fi
 	if [ ! -d "output/init" ];then mkdir output/init;fi
@@ -91,15 +98,23 @@ mk_dir:
 	if [ ! -d "output/device" ];then mkdir output/device;fi
 	if [ ! -d "output/userprog" ];then mkdir output/userprog;fi
 	if [ ! -d "output/user" ];then mkdir output/user;fi
+	if [ ! -d "output/file_system" ];then mkdir output/file_system;fi
 
 run:
 	# qemu-system-i386 -m size=64M -fda output/all.bin
-	qemu-system-i386 -m size=64M -boot order=a -fda output\all.bin -hda output\image02.img
+	#qemu-system-i386 -m size=64M -boot order=a -fda output\all.bin -hda output\image20m_01.img
+    #  output  bochs -f bochsrc-sample.bxrc -log bochsout.txt -q
+	bochs -f bochsrc-sample.bxrc -log bochsout.txt -q
 	#qemu-system-i386 -fda output/all.bin
 
 
 disk:
 	nasm disk.asm -o disk.img
+
+
+test_disk:
+	rm -rf output_result/image20m_01.img && rm -rf output_result/image20m_01.img.lock && cp ../testdocker/image20m_01.img output_result/image20m_01.img
+
 
 clean:
 	rm -rf output/boot
@@ -110,7 +125,9 @@ clean:
 	rm -rf output/thread
 	rm -rf output/device
 	rm -rf output/user
-	rm -rf output/all.bin
+	rm -rf output/file_system
+	rm -rf output_result/all.bin
+	if [ ! -d "output_result" ]; then mkdir output_result; fi
 	if [ ! -d "output/boot" ]; then mkdir output/boot; fi
 	if [ ! -d "output/init" ];then mkdir output/init;fi
 	if [ ! -d "output/kernel" ];then mkdir output/kernel;fi
@@ -119,6 +136,7 @@ clean:
 	if [ ! -d "output/device" ];then mkdir output/device;fi
 	if [ ! -d "output/userprog" ];then mkdir output/userprog;fi
 	if [ ! -d "output/user" ];then mkdir output/user;fi
+	if [ ! -d "output/file_system" ];then mkdir output/file_system;fi
 
 test_m:
 	echo "sdfdf"

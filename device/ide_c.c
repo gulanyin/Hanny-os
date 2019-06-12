@@ -488,5 +488,4 @@ void ide_init() {
    // 打印所有分区信息
    list_traversal(&partition_list, partition_info, (int)NULL);
    printk("ide_init done\n");
-     while(1);
 }

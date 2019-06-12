@@ -9,6 +9,7 @@
 #include "user/stdio_h.h"
 #include "device/ide_h.h"
 #include "device/timer_h.h"
+#include "file_system/fs_h.h"
 
 
 void k_thread_a(void*);
@@ -77,16 +78,14 @@ void main(){
 
 
 
+    printk("main22 ");
 
+    // 读取硬盘
+    ide_init();
+    filesys_init();   // 初始化文件系统
     while(1) {
-       printk("main22 ");
-
-       // 读取硬盘
-       ide_init();
-
-       //执行hlt时必须要保证目前处在开中断的情况下
        asm volatile("hlt");
-       while(1);
+       printk("main22 ");
     }
 
 }
@@ -98,14 +97,16 @@ void k_thread_a(void* args) {
    while(1) {
 
 
-       void* addr1 = sys_malloc(33);
-       sys_free(addr1);
-       void* addr2 = sys_malloc(33);
-       sys_free(addr2);
-       printk("%s addr1 %u addr2 %u", args, (uint32_t)addr1, (uint32_t)addr2);
+       // void* addr1 = sys_malloc(33);
+       // sys_free(addr1);
+       // void* addr2 = sys_malloc(33);
+       // sys_free(addr2);
+       // printk("%s addr1 %u addr2 %u", args, (uint32_t)addr1, (uint32_t)addr2);
 
       //console_str("test_var_a");
       //console_int_oct(test_var_a);
+
+      printk("%s", args);
       asm volatile("hlt");
       while(1) ;
    }
@@ -115,15 +116,19 @@ void k_thread_a(void* args) {
 void k_thread_b(void* args) {
     while(1) {
         //console_str(args);
-        void* addr = sys_malloc(33);
-        sys_free(addr);
-        printk("%s addr is %u\n", args, addr);
+
+        // void* addr = sys_malloc(33);
+        // sys_free(addr);
+        // printk("%s addr is %u\n", args, addr);
+
+
         //console_int_oct((int)addr);
        //console_str("test_var_b");
        //console_int_oct(test_var_b);
+       printk("%s", args);
        asm volatile("hlt");
-       mtime_sleep(1000) ;
        while(1);
+       // mtime_sleep(1000) ;
     }
 }
 
@@ -135,12 +140,13 @@ void u_prog_a(void) {
    while(1) {
      // test_var_a++;
 
-     printf("%s %c %x %d", "printf pid is", ' ',  getpid(), -10);
-     void* addr1 = malloc(33);
-     free(addr1);
-     void* addr2 = malloc(33);
-     free(addr2);
-     printf("addr1 %u addr2 %u", (int)addr1, (int)addr2);
+     // printf("%s %c %x %d", "printf pid is", ' ',  getpid(), -10);
+     // void* addr1 = malloc(33);
+     // free(addr1);
+     // void* addr2 = malloc(33);
+     // free(addr2);
+     // printf("addr1 %u addr2 %u", (int)addr1, (int)addr2);
+     printf("u_prog_a");
     while(1);
    }
 }
@@ -151,12 +157,14 @@ void u_prog_b(void) {
    while(1) {
       // test_var_b++;
       //printf("printf pid is : %x", getpid());
-      printf("%s %c %x %d", "printf pid is", ' ',  getpid(), -10);
-      void* addr1 = malloc(33);
-      void* addr2 = malloc(33);
-      free(addr1);
-      free(addr2);
-      printf("addr1 %u addr2 %u", (int)addr1, (int)addr2);
+      // printf("%s %c %x %d", "printf pid is", ' ',  getpid(), -10);
+      // void* addr1 = malloc(33);
+      // void* addr2 = malloc(33);
+      // free(addr1);
+      // free(addr2);
+      // printf("addr1 %u addr2 %u", (int)addr1, (int)addr2);
+
+      printf("u_prog_b");
       while(1);
    }
 }

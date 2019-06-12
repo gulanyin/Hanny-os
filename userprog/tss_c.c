@@ -16,21 +16,21 @@ void update_tss_esp(struct task_struct * p_thread){
 
 
 void entry_init_tss(){
-    print_str("tss ");print_int_oct((uint32_t)&tss);
+    //print_str("tss ");print_int_oct((uint32_t)&tss);
 
     WORD*  p_addres = (WORD*)&protect_model_gdt;
-    print_str("p_addres ");print_int_oct((uint32_t)p_addres);
+    //print_str("p_addres ");print_int_oct((uint32_t)p_addres);
 
-    print_char('\n');print_int_oct(*(p_addres+4*4 + 0));
-    print_char('\n');print_int_oct(*(p_addres+4*4 + 1));
+    //print_char('\n');print_int_oct(*(p_addres+4*4 + 0));
+    //print_char('\n');print_int_oct(*(p_addres+4*4 + 1));
 
     tss.ss0 = 0x10;
     tss.io_base = sizeof(tss);
 
     *(p_addres+4*4 + 1) = (WORD)&tss;
-    print_char('\n');print_int_oct(*(p_addres+4*4 + 1));
-    print_char('\n');print_int_oct(*(p_addres+4*4 + 2));
-    print_char('\n');print_int_oct(*(p_addres+4*4 + 3));
+    //print_char('\n');print_int_oct(*(p_addres+4*4 + 1));
+    //print_char('\n');print_int_oct(*(p_addres+4*4 + 2));
+    //print_char('\n');print_int_oct(*(p_addres+4*4 + 3));
 
     asm volatile ("ltr %w0" : : "r" (0x20));
     print_str("entry_init_tss ok ");

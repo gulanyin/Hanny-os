@@ -98,8 +98,8 @@ static void page_table_add(void* _virtual_address, void* _physical_address) {
    uint32_t virtual_address = (uint32_t)_virtual_address, physical_address = (uint32_t)_physical_address;
    uint32_t* pde = pde_virtual_address(virtual_address);
    uint32_t* pte = pte_virtual_address(virtual_address);
-   print_str("(void*)pde ");print_int_oct((int)pde );
-   print_str("pte ");print_int_oct( (int)pte );
+   //print_str("(void*)pde ");print_int_oct((int)pde );
+   //print_str("pte ");print_int_oct( (int)pte );
 
    /************************   注意   *************************
     *
@@ -250,12 +250,12 @@ void* get_a_page(int pf_type, uint32_t virtual_address){
         bit_idx = (virtual_address - cur->userprog_vaddr.virtual_addr_start) / PAGE_SIZE;
         ASSERT(bit_idx > 0);
         bitmap_set(&cur->userprog_vaddr.virtual_addr_bitmap, bit_idx, 1);
-        print_str("cur->pgdir !=NULL && pf == PF_USER ");
+        //print_str("cur->pgdir !=NULL && pf == PF_USER ");
     }else if(cur->pgdir == NULL && pf == PF_KERNEL){
         bit_idx = (virtual_address - kernel_virtual.virtual_addr_start) / PAGE_SIZE;
         ASSERT(bit_idx > 0);
         bitmap_set(&kernel_virtual.virtual_addr_bitmap, bit_idx, 1);
-        print_str("cur->pgdir !=NULL && pf == PF_USER ");
+        //print_str("cur->pgdir !=NULL && pf == PF_USER ");
     }else{
         PANIC("get_a_page error! not know type");
     }
@@ -263,8 +263,8 @@ void* get_a_page(int pf_type, uint32_t virtual_address){
     void* page_phyaddr = palloc(mem_pool);
     page_table_add((void*)virtual_address, page_phyaddr); // 在页表中做映射
     lock_release(&mem_pool->lock);
-    print_str("(void*)virtual_address ");print_int_oct((int)virtual_address );
-    print_str("page_phyaddr ");print_int_oct( (int)page_phyaddr );
+    //print_str("(void*)virtual_address ");print_int_oct((int)virtual_address );
+    //print_str("page_phyaddr ");print_int_oct( (int)page_phyaddr );
 
     return (void*)virtual_address;
 }
