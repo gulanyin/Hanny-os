@@ -102,7 +102,8 @@ mk_dir:
 
 run:
 	# qemu-system-i386 -m size=64M -fda output/all.bin
-	#qemu-system-i386 -m size=64M -boot order=a -fda output\all.bin -hda output\image20m_01.img
+	# qemu-system-i386 -m size=64M -boot order=a -fda output\all.bin -hda output\image20m_01.img
+	# qemu-system-i386 -cpu x86 Penryn -m size=64M -boot order=a -fda all.bin -hda image20m_01.img
     #  output  bochs -f bochsrc-sample.bxrc -log bochsout.txt -q
 	bochs -f bochsrc-sample.bxrc -log bochsout.txt -q
 	#qemu-system-i386 -fda output/all.bin
@@ -113,7 +114,7 @@ disk:
 
 
 test_disk:
-	rm -rf output_result/image20m_01.img && rm -rf output_result/image20m_01.img.lock && cp ../testdocker/image20m_01.img output_result/image20m_01.img
+	rm -rf output_result/image20m_01.img && rm -rf output_result/image20m_01.img.lock && cp output_result/image20m_01_orignal.img output_result/image20m_01.img
 
 
 clean:
