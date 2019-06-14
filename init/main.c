@@ -69,6 +69,7 @@ void main(){
 
     // 注册系统调用
     init_all_syscall();
+    printk("ooook");
 
 
 
@@ -85,7 +86,7 @@ void main(){
     filesys_init();   // 初始化文件系统
     while(1) {
        asm volatile("hlt");
-       printk("main22 ");
+       //printk("main22 ");
     }
 
 }
@@ -105,7 +106,7 @@ void k_thread_a(void* args) {
 
       //console_str("test_var_a");
       //console_int_oct(test_var_a);
-
+      printk("dfdaaa %x", 5);
       printk("%s", args);
       asm volatile("hlt");
       while(1) ;

@@ -148,7 +148,7 @@ ata3: enabled=0, ioaddr1=0x168, ioaddr2=0x360, irq=9
 #   ata3-slave:  type=cdrom, path=iso.sample, status=inserted
 #=======================================================================
 ata0-master: type=disk, mode=flat, path="image20m_01.img"
-#ata0-slave: type=disk, mode=flat, path="n80_2.img"
+#ata0-slave: type=disk, mode=flat, path="system.bin"
 #ata1-master: type=disk, mode=flat, path="n80_3.img"
 #ata1-slave: type=disk, mode=flat, path="n80_4.img"
 

@@ -5,6 +5,7 @@
 #include "kernel/bitmap_h.h"
 #include "kernel/list_h.h"
 #include "sys/gloab_h.h"
+#include "file_system/super_block_h.h"
 
 
 /* 分区结构 */
@@ -17,7 +18,7 @@ struct partition {
    struct super_block* sb;	 // 本分区的超级块
    BITMAP block_bitmap;	 // 块位图
    BITMAP inode_bitmap;	 // i结点位图
-   LIST open_inodes;	 // 本分区打开的i结点队列
+   LIST open_inodes;	 // 本分区打开的inode结点队列
 };
 
 /* 硬盘结构 */

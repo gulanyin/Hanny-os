@@ -6,7 +6,7 @@ output_result/all.bin: output/boot/boots.bin output/boot/setup.bin output/boot/s
 # boot/
 output/boot/boots.bin: boot/boots.asm
 	nasm $^ -o $@
-output/boot/setup.bin: boot/setup.asm
+output/boot/setup.bin: boot/setup0.asm
 	nasm $^ -o $@
 output/boot/system.bin: output/boot/system.elf
 	objcopy -O binary -S $^ $@
@@ -17,7 +17,7 @@ output/boot/system.elf: output/boot/header.o output/init/main.o output/kernel/pr
 						output/kernel/interrupt_s.o output/kernel/list_c.o  output/thread/thread_c.o output/thread/thread_s.o \
 						output/kernel/sync_c.o output/device/console_c.o  output/userprog/tss_c.o output/userprog/process_c.o \
 						output/user/syscall_c.o output/user/stdio_c.o output/device/ide_c.o output/device/timer_c.o \
-						output/file_system/fs_c.o
+						output/file_system/fs_c.o output/file_system/inode_c.o
 	ld -m elf_i386 -Ttext 0x0  -o $@ $^
 
 
@@ -87,9 +87,11 @@ output/user/stdio_c.o: user/stdio_c.c
 # file_system
 output/file_system/fs_c.o: file_system/fs_c.c
 	gcc $(GCC_FLAG) -c $^ -o $@
-
+output/file_system/inode_c.o: file_system/inode_c.c
+	gcc $(GCC_FLAG) -c $^ -o $@
 
 mk_dir:
+	if [ ! -d "output_result" ]; then mkdir output_result; fi
 	if [ ! -d "output/boot" ]; then mkdir output/boot; fi
 	if [ ! -d "output/init" ];then mkdir output/init;fi
 	if [ ! -d "output/kernel" ];then mkdir output/kernel;fi
@@ -104,18 +106,17 @@ run:
 	# qemu-system-i386 -m size=64M -fda output/all.bin
 	# qemu-system-i386 -m size=64M -boot order=a -fda output\all.bin -hda output\image20m_01.img
 	# qemu-system-i386 -cpu x86 Penryn -m size=64M -boot order=a -fda all.bin -hda image20m_01.img
+	# qemu-system-i386  -m size=64M -boot order=a -fda all.bin -hda image20m_01.img
     #  output  bochs -f bochsrc-sample.bxrc -log bochsout.txt -q
 	bochs -f bochsrc-sample.bxrc -log bochsout.txt -q
 	#qemu-system-i386 -fda output/all.bin
 
 
-disk:
-	nasm disk.asm -o disk.img
-
-
-test_disk:
+new_disk:
 	rm -rf output_result/image20m_01.img && rm -rf output_result/image20m_01.img.lock && cp output_result/image20m_01_orignal.img output_result/image20m_01.img
 
+disk:
+	rm -rf output_result/image20m_01.img.lock
 
 clean:
 	rm -rf output/boot
@@ -123,9 +124,9 @@ clean:
 	rm -rf output/kernel
 	rm -rf output/mm
 	rm -rf output/thread
-	rm -rf output/thread
 	rm -rf output/device
 	rm -rf output/user
+	rm -rf output/userprog
 	rm -rf output/file_system
 	rm -rf output_result/all.bin
 	if [ ! -d "output_result" ]; then mkdir output_result; fi

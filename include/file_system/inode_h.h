@@ -17,6 +17,6 @@ struct inode {
 
 /* i_sectors[0-11]是直接块, i_sectors[12]用来存储一级间接块指针 */
    uint32_t i_sectors[13];
-   LIST inode_tag;
+   LIST_ELEM inode_tag;
 };
 #endif

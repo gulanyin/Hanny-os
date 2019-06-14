@@ -90,6 +90,8 @@ struct task_struct {
    VIRTUAL_ADDRESS userprog_vaddr;  // 用户进程的虚拟地址
    struct mem_block_desc u_block_desc[DESC_COUNT];
 
+   int32_t fd_table[8]; // 文件描述符下标数组，数组元素为全局文件描述符列表中的下标
+
    uint32_t stack_magic;	 // 用这串数字做栈的边界标记,用于检测栈的溢出
 };
 
