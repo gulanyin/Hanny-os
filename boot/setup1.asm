@@ -3,19 +3,12 @@
 ; setup.asm 占用3个扇区的位置
 ; 读取后面扇区的代码到物理内存0处，此后内核代码从物理内存0处开始执行， 内核代码从第5个扇区开始
 ;
-; int0x13 最大读取72扇区限制
-;读取 ZHUMIAN_NUMBER 个柱面，软盘一个柱面有两个磁道，一个磁道18扇区，一共36扇区一个柱面
-; 读取一个柱面后读到 0x1000:0 处，然后将这一个柱面移动到 0x2000:xxx处
+; 读取硬盘b作为内核代码，FROM_HDB_SECTOR 个扇区， 读取到 0x2000:0开始处
+; 在0x2000:0处， 把内核代码复制到内存0处进入保护模式，
 ;
-; 在0x2000:xxx处， 跳过4个扇区的引导代码，把内核代码复制到内存0处进入保护模式，
-;
-
-
 ; ==============================================
 
-FIRST_READ_SECTOR equ 18   ; 内核代码占用扇区数
-COUNT_SECTOR_OF_KENER_CODE equ 5*18  ; 内核代码占用扇区数
-ZHUMIAN_NUMBER equ 4
+FROM_HDB_SECTOR equ 120
 
 org 0x80000
 
@@ -75,93 +68,60 @@ setup_read_mm:
     setup_load_kernel_code_to_memery:
 
 
-        ; .read_flappy:
-        ; mov ah, 0x02
-        ; mov al, 1         ; 每次读取一扇区
-        ; inc cl            ; 从第一个扇区开始读
-        ; int 0x13
-        ; jc setup_load_kernel_code_to_memery_load_failed  ; 读取失败
-        ;
-        ;
-        ; .mov_select:  ; 吧0x1000:0处一扇区的移动到0x2000:0处
-        ; push si
-        ; push di
-        ; push cx
-        ;
-        ; mov cx, 0x200
-        ; xor si, si
-        ; xor di, di   ; 移动开始位置 DS:SI=0x1000:0 , 目标位置ES：DI = 0:0
+        ; 从硬盘b读取内核代码
+        ;第1步：设置要读取的扇区数
+        mov dx,0x1f2
+        mov al, FROM_HDB_SECTOR          ; 内核代码占用扇区数
+        out dx,al            ;读取的扇区数
 
 
+          ;2 LBA
+      	; high
+      	mov al, 0x0
+      	mov dx, 0x1f5
+      	out dx, al
+
+      	mov al, 0x0
+      	mov dx, 0x1f4
+      	out dx, al
+
+      	mov al, 0x0
+      	mov dx, 0x1f3
+      	out dx, al
+
+        ;3 device   111f 0000
+    	mov al, 0xf0   ;从盘读取内核
+    	mov dx, 0x1f6
+    	out dx, al
+
+    	; 4 发读取命令
+    	mov al, 0x20
+    	mov dx, 0x1f7
+    	out dx, al
+
+        .not_ready:
+        ;同一端口，写时表示写入命令字，读时表示读入硬盘状态
+        nop
+        in al, dx
+        and al, 0x88	   ;第4位为1表示硬盘控制器已准备好数据传输，第7位为1表示硬盘忙
+        cmp al, 0x08
+        jnz .not_ready	   ;若未准备好，继续等。
 
 
-        mov ax, 0x8000
-        mov gs, ax
-
-        .read_from_fd0:   ;每读取一个柱面共36个扇区，读到0x1000:0000 处，然后将这个0x1000:0000 处移动到0x2000:0000 处
-        mov ax, 0x1000
-        mov es, ax
-        xor bx, bx  ;es:bx=0x1000:0000
-        mov dx, 0x0
-
-
-        ;mov cl, 1
-        mov byte ch, [gs: zhu_mian_number]  ; 柱面
-        mov cl, 1
-        mov ah, 0x02
-        mov al, 36
-
-
-        int 0x13
-        jc setup_load_kernel_code_to_memery_load_failed  ; 读取失败
-
-        .copy_36_sectors: ;将这个0x1000:0000 处移动到0x2000:0000 处
-
-        mov word di, [gs: dst_location]
-        mov ax, 0x1000    ; 移动开始位置 DS:SI=0x1000:0 , 目标位置ES：DI = 0x2000:0
-        mov ds, ax
+        ; 读取数据 到0x2000:0处
         mov ax, 0x2000
-        mov es, ax
-        xor si, si
+    	mov gs, ax
+        xor bx, bx
+        mov dx, 0x1f0
+        mov cx, FROM_HDB_SECTOR*256  ; 每次读取两个字节 100 扇区，512字节
 
-        cld               ;方向标志位 df=0
-        mov cx, 36*128 ;36*36*521/2    ; 一次移动4个字节，一个扇区移动512/4 = 128
-        rep movsd
-        mov word [gs: dst_location], di
-
-        mov byte al, [gs: zhu_mian_number]
-        inc al
-        mov [gs: zhu_mian_number], al
-        cmp al, ZHUMIAN_NUMBER
-        jl .read_from_fd0
+        .go_on_read:
+        in ax, dx
+        mov [gs: bx], ax
+        add bx, 2
+        loop .go_on_read
 
 
-
-
-
-        ; 逻辑扇区号 = （面号*80+磁道号）*18+扇区号-1
-        ;       那么可以使用下面的算法来计算
-        ; int()：描述性运算符，取商
-        ; rem()：描述性运算符，取余数
-        ; 逻辑扇区号 = （面号*80+磁道号）*18+扇区号-1
-        ; 面号 = int(逻辑扇区号/1440)
-        ; 磁道号 = int(rem(逻辑扇区号/1440)/18)
-        ; 扇区号 = rem(rem(逻辑扇区号/1440)/18)+1
-
-        ; 逻辑扇区74号扇区开始，
-        ; 面号 = int(74/1440)  = 0
-        ; 磁道号 = int(rem(74/1440)/18) = 4
-        ; 扇区号 = rem(rem(74/1440)/18)+1 = 3
-
-        ; mov dx, 0x0000     ; dh-磁头号， dl-驱动器号
-        ; mov cx, 0x0403     ; ch-10位磁道号低8位，cl-位7、6 10位磁道号高2位， 位5-0 起始扇区
-    	;                    ; 0面0道2扇区，扇区从1计数, 从第5扇区开始读取
-    	; mov bx, 70*512         ; es:bx=0x1000:0000 读入缓冲区
-        ;
-    	; mov ah, 0x02       ; 功能号
-    	; mov al, 70          ; 读入扇区数 ,
-    	; int 0x13           ; 错误cf 置1
-        ; jc setup_load_kernel_code_to_memery_load_failed  ; 第一次读取失败
     	;jnc setup_load_kernel_code_to_memery_load_ok
         jmp setup_load_kernel_code_to_memery_load_ok
 
@@ -235,12 +195,12 @@ setup_read_mm:
         cli
         mov ax, 0x2000    ; 移动开始位置 DS:SI=0x2000:2048 , 目标位置ES：DI = 0:0
         mov ds, ax
-        mov si, 2048      ; 跨过前面几个扇区
+        mov si, 0      ; 跨过前面0个扇区
         xor di, di
         mov es, di
 
         cld               ;方向标志位 df=0
-        mov cx, ZHUMIAN_NUMBER*36*128    ; 一次移动4个字节，一个扇区移动512/4 = 128
+        mov cx, FROM_HDB_SECTOR*128    ; 一次移动4个字节，一个扇区移动512/4 = 128
         rep movsd
 
 

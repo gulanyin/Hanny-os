@@ -2,11 +2,15 @@ GCC_FLAG = -fno-stack-protector -m32 -I include -nostdinc -fno-builtin
 
 output_result/all.bin: output/boot/boots.bin output/boot/setup.bin output/boot/system.bin
 	cat $^ > $@
+	cat output/boot/boots.bin output/boot/setup.bin > output_result/boot.bin
+	cp output/boot/system.bin output_result/kernel_start.bin
+	dd if=output_result/kernel_start.bin  bs=512 count=256 of=output_result/kernel.bin conv=notrunc
+
 
 # boot/
 output/boot/boots.bin: boot/boots.asm
 	nasm $^ -o $@
-output/boot/setup.bin: boot/setup0.asm
+output/boot/setup.bin: boot/setup1.asm
 	nasm $^ -o $@
 output/boot/system.bin: output/boot/system.elf
 	objcopy -O binary -S $^ $@
@@ -122,6 +126,8 @@ new_disk:
 
 disk:
 	rm -rf output_result/image20m_01.img.lock
+	rm -rf output_result/boot.bin.lock
+	rm -rf output_result/kernel.bin.lock
 
 clean:
 	rm -rf output/boot
@@ -134,6 +140,10 @@ clean:
 	rm -rf output/userprog
 	rm -rf output/file_system
 	rm -rf output_result/all.bin
+	rm -rf output_result/kernel_start.bin
+	rm -rf output_result/kernel.bin
+	rm -rf output_result/boot.bin
+	nasm output_result/kernel.asm -o output_result/kernel.bin
 	if [ ! -d "output_result" ]; then mkdir output_result; fi
 	if [ ! -d "output/boot" ]; then mkdir output/boot; fi
 	if [ ! -d "output/init" ];then mkdir output/init;fi
