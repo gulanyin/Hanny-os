@@ -51,3 +51,29 @@ int8_t strcmp (const char* a, const char* b) {
     * 若*a大于*b,表达式就等于1,否则就表达式不成立,也就是布尔值为0,恰恰表示*a等于*b */
     return *a < *b ? -1 : *a > *b;
 }
+
+
+//将字符串src_拼接到dst_后,将回拼接的串地址
+char* strcat(char* dst_, const char* src_) {
+   ASSERT(dst_ != NULL && src_ != NULL);
+   char* str = dst_;
+   while (*str++);
+   --str;      // 别看错了，--str是独立的一句，并不是while的循环体
+   while((*str++ = *src_++));	 // 当*str被赋值为0时,此时表达式不成立,正好添加了字符串结尾的0.
+   return dst_;
+}
+
+
+//从后往前查找字符串str中首次出现字符ch的地址(不是下标,是地址)
+char* strrchr(const char* str, const uint8_t ch) {
+   ASSERT(str != NULL);
+   const char* last_char = NULL;
+   /* 从头到尾遍历一次,若存在ch字符,last_char总是该字符最后一次出现在串中的地址(不是下标,是地址)*/
+   while (*str != 0) {
+      if (*str == ch) {
+	 last_char = str;
+      }
+      str++;
+   }
+   return (char*)last_char;
+}

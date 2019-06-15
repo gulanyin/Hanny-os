@@ -3,6 +3,7 @@
 #include "sys/std_int_h.h"
 #include "kernel/list_h.h"
 #include "sys/gloab_h.h"
+#include "device/ide_h.h"
 
 /* inode结构 */
 struct inode {
@@ -19,4 +20,10 @@ struct inode {
    uint32_t i_sectors[13];
    LIST_ELEM inode_tag;
 };
+
+
+void inode_init(uint32_t inode_no, struct inode* new_inode);
+struct inode* inode_open(struct partition* part, uint32_t inode_no);
+void inode_close(struct inode* inode);
+void inode_sync(struct partition* part, struct inode* inode, void* io_buf);
 #endif

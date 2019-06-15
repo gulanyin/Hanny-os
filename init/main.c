@@ -84,6 +84,7 @@ void main(){
     // 读取硬盘
     ide_init();
     filesys_init();   // 初始化文件系统
+    sys_open("/file002", O_CREAT);
     while(1) {
        asm volatile("hlt");
        //printk("main22 ");

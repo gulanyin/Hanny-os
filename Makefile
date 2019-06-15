@@ -17,7 +17,8 @@ output/boot/system.elf: output/boot/header.o output/init/main.o output/kernel/pr
 						output/kernel/interrupt_s.o output/kernel/list_c.o  output/thread/thread_c.o output/thread/thread_s.o \
 						output/kernel/sync_c.o output/device/console_c.o  output/userprog/tss_c.o output/userprog/process_c.o \
 						output/user/syscall_c.o output/user/stdio_c.o output/device/ide_c.o output/device/timer_c.o \
-						output/file_system/fs_c.o output/file_system/inode_c.o
+						output/file_system/fs_c.o output/file_system/inode_c.o output/file_system/dir_c.o \
+						output/file_system/file_c.o
 	ld -m elf_i386 -Ttext 0x0  -o $@ $^
 
 
@@ -88,6 +89,10 @@ output/user/stdio_c.o: user/stdio_c.c
 output/file_system/fs_c.o: file_system/fs_c.c
 	gcc $(GCC_FLAG) -c $^ -o $@
 output/file_system/inode_c.o: file_system/inode_c.c
+	gcc $(GCC_FLAG) -c $^ -o $@
+output/file_system/dir_c.o: file_system/dir_c.c
+	gcc $(GCC_FLAG) -c $^ -o $@
+output/file_system/file_c.o: file_system/file_c.c
 	gcc $(GCC_FLAG) -c $^ -o $@
 
 mk_dir:

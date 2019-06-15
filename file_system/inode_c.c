@@ -12,6 +12,7 @@
 
 
 
+
 // 用来存储inode位置
 struct inode_position {
    bool	 two_sec;	// inode是否跨扇区
@@ -99,6 +100,7 @@ void inode_sync(struct partition* part, struct inode* inode, void* io_buf) {	 //
 
 
 /* 根据i结点号返回相应的i结点 */
+// 从分区的inode_table 中找到一个inode结构，在内核内存中申请一块内存存放inode的内容，并挂到分区的open_inodes中去
 struct inode* inode_open(struct partition* part, uint32_t inode_no) {
    /* 先在已打开inode链表中找inode,此链表是为提速创建的缓冲区 */
    PLIST_ELEM elem = part->open_inodes.head.next;
@@ -174,4 +176,22 @@ void inode_close(struct inode* inode) {
       cur->pgdir = cur_pagedir_bak;
    }
    set_interrupt_status(old_status);
+}
+
+
+
+/* 初始化new_inode */
+void inode_init(uint32_t inode_no, struct inode* new_inode) {
+   new_inode->i_no = inode_no;
+   new_inode->i_size = 0;
+   new_inode->i_open_cnts = 0;
+   new_inode->write_deny = false;
+
+   /* 初始化块索引数组i_sector */
+   uint8_t sec_idx = 0;
+   while (sec_idx < 13) {
+   /* i_sectors[12]为一级间接块地址 */
+      new_inode->i_sectors[sec_idx] = 0;
+      sec_idx++;
+   }
 }
