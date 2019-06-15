@@ -12,6 +12,8 @@
 #include "sys/gloab_h.h"
 #include "sys/std_int_h.h"
 #include "kernel/bitmap_h.h"
+#include "thread/thread_h.h"
+#include "device/console_h.h"
 
 
 
@@ -396,6 +398,9 @@ int32_t sys_open(const char* pathname, uint8_t flags) {
     	 printk("creating file\n");
     	 fd = file_create(searched_record.parent_dir, (strrchr(pathname, '/') + 1), flags);
     	 dir_close(searched_record.parent_dir);
+      default:
+         fd = file_open(inode_no, flags);
+     //case O_RDONLY, O_WRONLY, O_RDWR
       // 其余为打开文件
    }
 
@@ -408,13 +413,99 @@ int32_t sys_open(const char* pathname, uint8_t flags) {
 
 
 
+/* 将文件描述符转化为文件表的下标 */
+static uint32_t fd_local2global(uint32_t local_fd) {
+   struct task_struct* cur = running_thread();
+   int32_t global_fd = cur->fd_table[local_fd];
+   ASSERT(global_fd >= 0 && global_fd < MAX_FILE_OPEN);
+   return (uint32_t)global_fd;
+}
+
+
+
+/* 关闭文件描述符fd指向的文件,成功返回0,否则返回-1 */
+int32_t sys_close(int32_t fd) {
+   int32_t ret = -1;   // 返回值默认为-1,即失败
+   if (fd > 2) {
+      uint32_t _fd = fd_local2global(fd);
+      ret = file_close(&file_table[_fd]);
+      running_thread()->fd_table[fd] = -1; // 使该文件描述符位可用
+   }
+   return ret;
+}
+
+
+
+/* 将buf中连续count个字节写入文件描述符fd,成功则返回写入的字节数,失败返回-1 */
+int32_t sys_write(int32_t fd, const void* buf, uint32_t count) {
+   if (fd < 0) {
+      printk("sys_write: fd error\n");
+      return -1;
+   }
+   if (fd == 0) {  // 标准输出
+      char tmp_buf[200] = {0};
+      memcpy(tmp_buf, buf, count);
+      console_str(tmp_buf);
+      return count;
+   }
+   uint32_t _fd = fd_local2global(fd);
+   struct file* wr_file = &file_table[_fd];
+   if (wr_file->fd_flag & O_WRONLY || wr_file->fd_flag & O_RDWR) {
+      uint32_t bytes_written  = file_write(wr_file, buf, count);
+      return bytes_written;
+   } else {
+      console_str("sys_write: not allowed to write file without flag O_RDWR or O_WRONLY\n");
+      return -1;
+   }
+}
+
+
+/* 从文件描述符fd指向的文件中读取count个字节到buf,若成功则返回读出的字节数,到文件尾则返回-1 */
+int32_t sys_read(int32_t fd, void* buf, uint32_t count) {
+   if (fd < 0) {
+      printk("sys_read: fd error\n");
+      return -1;
+   }
+   ASSERT(buf != NULL);
+   uint32_t _fd = fd_local2global(fd);
+   return file_read(&file_table[_fd], buf, count);
+}
 
 
 
 
+/* 重置用于文件读写操作的偏移指针,成功时返回新的偏移量,出错时返回-1 */
+int32_t sys_lseek(int32_t fd, int32_t offset, uint8_t whence) {
+    if (fd < 0) {
+        printk("sys_lseek: fd error\n");
+        return -1;
+    }
+    ASSERT(whence > 0 && whence < 4);
+    uint32_t _fd = fd_local2global(fd);
+    struct file* pf = &file_table[_fd];
+    int32_t new_pos = 0;   //新的偏移量必须位于文件大小之内
+    int32_t file_size = (int32_t)pf->fd_inode->i_size;
+    switch (whence) {
+        /* SEEK_SET 新的读写位置是相对于文件开头再增加offset个位移量 */
+        case SEEK_SET:
+            new_pos = offset;
+            break;
 
+        /* SEEK_CUR 新的读写位置是相对于当前的位置增加offset个位移量 */
+        case SEEK_CUR:	// offse可正可负
+            new_pos = (int32_t)pf->fd_pos + offset;
+            break;
 
-
+        /* SEEK_END 新的读写位置是相对于文件尺寸再增加offset个位移量 */
+        case SEEK_END:	   // 此情况下,offset应该为负值
+            new_pos = file_size + offset;
+    }
+    if (new_pos < 0 || new_pos > (file_size - 1)) {
+        return -1;
+    }
+    pf->fd_pos = new_pos;
+    return pf->fd_pos;
+}
 
 
 
