@@ -8,7 +8,7 @@
 ;
 ; ==============================================
 
-FROM_HDB_SECTOR equ 120
+FROM_HDB_SECTOR equ 128
 
 org 0x80000
 

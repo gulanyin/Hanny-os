@@ -93,15 +93,20 @@ void main(){
     // sys_write(fd, "file002_content_hello\n", 22);
     */
 
-    uint32_t fd = sys_open("/file002", O_RDONLY);  // 打开一个文件
-    char temp_content[50] = {0};
-    sys_lseek(fd, 4, SEEK_SET);
-    sys_read(fd, temp_content, 45);
-    printf("content is : %s\n", temp_content);
+    // uint32_t fd = sys_open("/file002", O_RDONLY);  // 打开一个文件
+    // char temp_content[50] = {0};
+    // sys_lseek(fd, 4, SEEK_SET);
+    // sys_read(fd, temp_content, 45);
+    // printf("content is : %s\n", temp_content);
+    //
+    //
+    // sys_close(fd);
+    // printk("fd : %u has closed \n", fd);
+
+    // 删除文件
+    printf("/file002 delete %s!\n", sys_unlink("/file002") == 0 ? "success" : "fail");
 
 
-    sys_close(fd);
-    printk("fd : %u has closed \n", fd);
     while(1) {
        asm volatile("hlt");
        //printk("main22 ");
