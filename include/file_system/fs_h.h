@@ -9,6 +9,7 @@
 #define SECTOR_SIZE 512		    // 扇区字节大小
 #define BLOCK_SIZE SECTOR_SIZE	    // 块字节大小
 
+
 /* 文件类型 */
 enum file_types {
    FT_UNKNOWN,	  // 不支持的文件类型
@@ -48,4 +49,10 @@ int32_t sys_write(int32_t fd, const void* buf, uint32_t count);
 int32_t sys_read(int32_t fd, void* buf, uint32_t count);
 int32_t sys_lseek(int32_t fd, int32_t offset, uint8_t whence);
 int32_t sys_unlink(const char* pathname);
+int32_t sys_mkdir(const char* pathname) ;
+struct dir* sys_opendir(const char* name);
+int32_t sys_closedir(struct dir* dir);
+struct dir_entry* sys_readdir(struct dir* dir);
+void sys_rewinddir(struct dir* dir);
+int32_t sys_rmdir(const char* pathname);
 #endif

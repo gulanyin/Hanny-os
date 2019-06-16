@@ -10,6 +10,7 @@
 #include "device/ide_h.h"
 #include "device/timer_h.h"
 #include "file_system/fs_h.h"
+#include "file_system/dir_h.h"
 
 
 void k_thread_a(void*);
@@ -104,7 +105,48 @@ void main(){
     // printk("fd : %u has closed \n", fd);
 
     // 删除文件
-    printf("/file002 delete %s!\n", sys_unlink("/file002") == 0 ? "success" : "fail");
+    // printf("/file002 delete %s!\n", sys_unlink("/file002") == 0 ? "success" : "fail");
+
+
+    // 创建目录
+    // printf("/dir1 create %s!\n", sys_mkdir("/dir1") == 0 ? "done" : "fail");
+
+    // 打开目录
+   //  struct dir* p_dir = sys_opendir("/dir1");
+   //  if (p_dir) {
+   //    printf("/dir1 open done!, inode_no is %u \n", p_dir->inode->i_no);
+   //    if (sys_closedir(p_dir) == 0) {
+   //       printf("/dir1 close done!\n");
+   //    } else {
+   //       printf("/dir1 close fail!\n");
+   //    }
+   // } else {
+   //    printf("/dir1 open fail!\n");
+   // }
+
+
+   // // 遍历目录
+   // struct dir* p_dir = sys_opendir("/dir1");
+   //  if (p_dir) {
+   //    printf("/.dsf open done!, inode_no is %u \n", p_dir->inode->i_no);
+   //    char* type = NULL;
+   //    struct dir_entry* dir_e = NULL;
+   //    while((dir_e = sys_readdir(p_dir))) {
+   //  	 if (dir_e->f_type == FT_REGULAR) {
+   //  	    type = "regular";
+   //  	 } else {
+   //  	    type = "directory";
+   //  	 }
+   //  	 printf("      %s   %s\n", type, dir_e->filename);
+   //    }
+   // } else {
+   //    printf("/.dsf open fail!\n");
+   // }
+
+
+   // 删除目录
+   printf("try to delete nonempty directory /dir1\n");
+   printf("sys_rmdir: /dir1 delete %s!\n", sys_rmdir("/dir1") == -1 ? "failed": "success");
 
 
     while(1) {

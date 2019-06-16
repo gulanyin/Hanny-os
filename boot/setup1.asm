@@ -7,8 +7,9 @@
 ; 在0x2000:0处， 把内核代码复制到内存0处进入保护模式，
 ;
 ; ==============================================
-
-FROM_HDB_SECTOR equ 128
+ ; 128*512 = 65536 = 64k , 128个扇区占用64k，实模式下寻址段内只能FFFF，因此从第129个扇区开始读到，0x3000:开始处，然后在复制到0x1000:处
+FROM_HDB_SECTOR equ 150
+SECTOR_OF_SEGMENT equ 128
 
 org 0x80000
 
@@ -113,13 +114,26 @@ setup_read_mm:
     	mov gs, ax
         xor bx, bx
         mov dx, 0x1f0
-        mov cx, FROM_HDB_SECTOR*256  ; 每次读取两个字节 100 扇区，512字节
-
+        mov cx, SECTOR_OF_SEGMENT*256  ; 每次读取两个字节 100 扇区，512字节
         .go_on_read:
         in ax, dx
         mov [gs: bx], ax
         add bx, 2
         loop .go_on_read
+
+        ; 前128扇区的代码移动到了0x2000:0 -> 0x2000:0xFFFF处
+        ;129扇区的代码移动到0x3000:0处
+        ; 读取数据 到0x2000:0处
+        mov ax, 0x3000
+    	mov gs, ax
+        xor bx, bx
+        mov dx, 0x1f0
+        mov cx, (FROM_HDB_SECTOR - SECTOR_OF_SEGMENT)*256  ; 129扇区处开始
+        .go_on_read_rest:
+        in ax, dx
+        mov [gs: bx], ax
+        add bx, 2
+        loop .go_on_read_rest
 
 
     	;jnc setup_load_kernel_code_to_memery_load_ok
@@ -193,14 +207,27 @@ setup_read_mm:
         ; 移动代码到内存地址为0的地方
 
         cli
-        mov ax, 0x2000    ; 移动开始位置 DS:SI=0x2000:2048 , 目标位置ES：DI = 0:0
+        mov ax, 0x2000    ; 移动开始位置 DS:SI=0x2000:0 , 目标位置ES：DI = 0:0
         mov ds, ax
         mov si, 0      ; 跨过前面0个扇区
         xor di, di
         mov es, di
 
         cld               ;方向标志位 df=0
-        mov cx, FROM_HDB_SECTOR*128    ; 一次移动4个字节，一个扇区移动512/4 = 128
+        mov cx, SECTOR_OF_SEGMENT*128    ; 一次移动4个字节，一个扇区移动512/4 = 128
+        rep movsd
+
+
+        cli
+        mov ax, 0x3000    ; 移动开始位置 DS:SI=0x3000:0 , 目标位置ES：DI = 0x1000:0
+        mov ds, ax
+        mov si, 0
+        mov di, 0x1000
+        mov es, di
+        xor di, di
+
+        cld               ;方向标志位 df=0
+        mov cx, (FROM_HDB_SECTOR - SECTOR_OF_SEGMENT)*128    ; 一次移动4个字节，一个扇区移动512/4 = 128
         rep movsd
 
 

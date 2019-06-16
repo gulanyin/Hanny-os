@@ -79,7 +79,7 @@ void page_dir_activate(struct task_struct* p_thread) {
 
    }
 
-   //console_str("page_dir_activate");console_int_oct(pagedir_phy_addr);
+   // console_str("page_dir_activate");console_int_oct(pagedir_phy_addr);
    console_str("p");
 
    /* 更新页目录寄存器cr3,使新页表生效 */
@@ -93,6 +93,8 @@ void process_activate(struct task_struct* p_thread) {
    ASSERT(p_thread != NULL);
    /* 击活该进程或线程的页表 */
    page_dir_activate(p_thread);
+   // console_str("process_activate_p_thread ");console_int_oct((uint32_t)p_thread);
+   // console_str("process_activate_p_thread_pgdir ");console_int_oct((uint32_t)p_thread->pgdir);
 
    /* 内核线程特权级本身就是0,处理器进入中断时并不会从tss中获取0特权级栈地址,故不需要更新esp0 */
    if (p_thread->pgdir) {
@@ -164,7 +166,7 @@ void process_execute(void* filename, char* name){
     list_append(&thread_all_list, &p_thread->all_list_tag);
     set_interrupt_status(old_status);
 
-    //console_str("process_execute  ");console_int_oct((uint32_t)p_thread);
-    //console_str("addr_v2p  ");console_int_oct(addr_v2p((uint32_t)p_thread));
+    // console_str("process_execute  ");console_int_oct((uint32_t)p_thread);
+    // console_str("addr_v2p  ");console_int_oct(addr_v2p((uint32_t)p_thread));
     //console_str("\n");
 }
