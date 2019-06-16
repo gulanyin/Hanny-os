@@ -125,7 +125,7 @@ void main(){
    // }
 
 
-   // // 遍历目录
+   // // 遍历目录  /.dsf 是当前目录 /..dfw是上级目录
    // struct dir* p_dir = sys_opendir("/dir1");
    //  if (p_dir) {
    //    printf("/.dsf open done!, inode_no is %u \n", p_dir->inode->i_no);
@@ -145,9 +145,27 @@ void main(){
 
 
    // 删除目录
-   printf("try to delete nonempty directory /dir1\n");
-   printf("sys_rmdir: /dir1 delete %s!\n", sys_rmdir("/dir1") == -1 ? "failed": "success");
+   // printf("try to delete nonempty directory /dir1\n");
+   // printf("sys_rmdir: /dir1 delete %s!\n", sys_rmdir("/dir1") == -1 ? "failed": "success");
 
+
+   // 线程当前运行工作目录
+   // char temp_buff_pwd[30] = {0};
+   // sys_getcwd(temp_buff_pwd, 30);
+   // printf("cwd: %s!\n", temp_buff_pwd);
+   // sys_chdir("/dir1");
+   // sys_getcwd(temp_buff_pwd, 30);
+   // printf("changed cwd: %s!\n", temp_buff_pwd);
+
+
+   // 打印文件或者目录信息
+   struct stat obj_stat;
+   int stat_index = 0;
+   char* dirs[3] = {"/", "/dir1", "/file001"};
+   for(stat_index=0; stat_index<3; stat_index++){
+       sys_stat(dirs[stat_index], &obj_stat);
+       printf("%s info\n   i_no:%d\n   size:%d\n   filetype:%s\n", dirs[stat_index], obj_stat.st_ino, obj_stat.st_size,  obj_stat.st_filetype == 2 ? "directory" : "regular");
+   }
 
     while(1) {
        asm volatile("hlt");

@@ -90,6 +90,7 @@ void init_thread(struct task_struct* pthread, char* name, int prio) {
    pthread->ticks = prio;
    pthread->elapsed_ticks = 0;
    pthread->pgdir = NULL;
+   pthread->cwd_inode_nr = 0;
    pthread->stack_magic = 0x19870916;	  // 自定义的魔数
 
    pthread->pid = allocate_pid();

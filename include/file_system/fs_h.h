@@ -34,6 +34,14 @@ enum whence {
 };
 
 
+/* 文件属性结构体 */
+struct stat {
+   uint32_t st_ino;		 // inode编号
+   uint32_t st_size;		 // 尺寸
+   enum file_types st_filetype;	 // 文件类型
+};
+
+
 /* 用来记录查找文件过程中已找到的上级路径,也就是查找文件过程中"走过的地方" */
 struct path_search_record {
    char searched_path[MAX_PATH_LEN];	    // 查找过程中的父路径
@@ -55,4 +63,7 @@ int32_t sys_closedir(struct dir* dir);
 struct dir_entry* sys_readdir(struct dir* dir);
 void sys_rewinddir(struct dir* dir);
 int32_t sys_rmdir(const char* pathname);
+char* sys_getcwd(char* buf, uint32_t size) ;
+int32_t sys_chdir(const char* path);
+int32_t sys_stat(const char* path, struct stat* buf);
 #endif
