@@ -80,7 +80,7 @@ void page_dir_activate(struct task_struct* p_thread) {
    }
 
    // console_str("page_dir_activate");console_int_oct(pagedir_phy_addr);
-   console_str("p");
+   // console_str("p");
 
    /* 更新页目录寄存器cr3,使新页表生效 */
    asm volatile ("movl %0, %%cr3" : : "r" (pagedir_phy_addr) : "memory");

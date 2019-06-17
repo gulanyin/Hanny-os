@@ -22,7 +22,7 @@ output/boot/system.elf: output/boot/header.o output/init/main.o output/kernel/pr
 						output/kernel/sync_c.o output/device/console_c.o  output/userprog/tss_c.o output/userprog/process_c.o \
 						output/user/syscall_c.o output/user/stdio_c.o output/device/ide_c.o output/device/timer_c.o \
 						output/file_system/fs_c.o output/file_system/inode_c.o output/file_system/dir_c.o \
-						output/file_system/file_c.o
+						output/file_system/file_c.o output/kernel/command_c.o
 	ld -m elf_i386 -Ttext 0x0  -o $@ $^
 
 
@@ -45,6 +45,8 @@ output/kernel/list_c.o: kernel/list_c.c
 	gcc $(GCC_FLAG) -c $^ -o $@
 
 output/kernel/sync_c.o: kernel/sync_c.c
+	gcc $(GCC_FLAG) -c $^ -o $@
+output/kernel/command_c.o: kernel/command_c.c
 	gcc $(GCC_FLAG) -c $^ -o $@
 
 
@@ -115,7 +117,7 @@ run:
 	# qemu-system-i386 -m size=64M -fda output/all.bin
 	# qemu-system-i386 -m size=64M -boot order=a -fda output\all.bin -hda output\image20m_01.img
 	# qemu-system-i386 -cpu x86 Penryn -m size=64M -boot order=a -fda all.bin -hda image20m_01.img
-	# qemu-system-i386  -m size=64M -boot order=a -fda all.bin -hda image20m_01.img
+	# qemu-system-i386  -m size=64M -boot order=a -fda boot.bin -hda image20m_01.img -hdb kernel.bin
     #  output  bochs -f bochsrc-sample.bxrc -log bochsout.txt -q
 	bochs -f bochsrc-sample.bxrc -log bochsout.txt -q
 	#qemu-system-i386 -fda output/all.bin

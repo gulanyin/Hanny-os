@@ -5,6 +5,7 @@
 #include "kernel/io.h"
 #include "thread/thread_h.h"
 #include "kernel/debug_h.h"
+#include "kernel/command_h.h"
 
 #define EFLAGS_IF   0x00000200       // eflags寄存器中的if位为1
 #define GET_EFLAGS(EFLAG_VAR) asm volatile("pushfl; popl %0" : "=g" (EFLAG_VAR))
@@ -288,6 +289,7 @@ void handler_keyboard(int vector_number){
             out_put_char = keymap[index_x][index_y];
             if(out_put_char){
                 print_char(out_put_char);
+                append_char_to_command(out_put_char);
             }
 
             return ;
@@ -330,6 +332,7 @@ void register_int_all(){
 void entry_init_interrupt(){
     register_int_all();
     setup_interrupt();
+    key_borard_command_init();
 
     // 开中断
     // on_interrupt();

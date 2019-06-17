@@ -6,5 +6,6 @@
 void print_char(unsigned char);
 void print_str(unsigned char*);
 void print_int_oct(unsigned int);
+void cls_screen();
 
 #endif

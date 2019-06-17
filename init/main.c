@@ -11,6 +11,7 @@
 #include "device/timer_h.h"
 #include "file_system/fs_h.h"
 #include "file_system/dir_h.h"
+#include "kernel/command_h.h"
 
 
 void k_thread_a(void*);
@@ -63,8 +64,8 @@ void main(){
 
 
     // 添加两个线程结构体
-    process_execute(u_prog_a, "user_prog_a");
-    process_execute(u_prog_b, "user_prog_b");
+    // process_execute(u_prog_a, "user_prog_a");
+    // process_execute(u_prog_b, "user_prog_b");
     console_str("process_execute ok\n");
 
 
@@ -167,9 +168,12 @@ void main(){
        printf("%s info\n   i_no:%d\n   size:%d\n   filetype:%s\n", dirs[stat_index], obj_stat.st_ino, obj_stat.st_size,  obj_stat.st_filetype == 2 ? "directory" : "regular");
    }
 
+   // cls_screen();
+   show_shell_root_pwd();
+
     while(1) {
        asm volatile("hlt");
-       //printk("main22 ");
+       // thread_block(TASK_BLOCKED);
     }
 
 }
@@ -178,6 +182,7 @@ void main(){
 
 // k_thread_a 函数
 void k_thread_a(void* args) {
+    printk("%s", args);
    while(1) {
 
 
@@ -189,15 +194,16 @@ void k_thread_a(void* args) {
 
       //console_str("test_var_a");
       //console_int_oct(test_var_a);
-      printk("dfdaaa %x", 5);
-      printk("%s", args);
+      // printk("dfdaaa %x", 5);
+      // printk("%s", args);
+      thread_block(TASK_BLOCKED);
       asm volatile("hlt");
-      while(1) ;
-   }
+  }
 }
 
 // k_thread_b 函数
 void k_thread_b(void* args) {
+    printk("%s", args);
     while(1) {
         //console_str(args);
 
@@ -209,9 +215,10 @@ void k_thread_b(void* args) {
         //console_int_oct((int)addr);
        //console_str("test_var_b");
        //console_int_oct(test_var_b);
-       printk("%s", args);
+       // printk("%s", args);
+       // thread_block(TASK_BLOCKED);
        asm volatile("hlt");
-       while(1);
+       thread_block(TASK_BLOCKED);
        // mtime_sleep(1000) ;
     }
 }

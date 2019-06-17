@@ -230,6 +230,82 @@ print_int_oct:
 
 
 
+global cls_screen
+cls_screen:
+    pushad
+
+    mov eax, SELECTOR_0_SCREEN
+    mov gs, eax
+
+    mov ebx, 0
+    mov ecx, 80*25
+
+    .cls_screen_continue_cls:
+    mov word [gs: ebx], 0x0720
+    add ebx, 2
+    loop .cls_screen_continue_cls
+    ;将光标设为bx值
+    ; 高8位
+    xor ebx, ebx
+    mov dx, 0x03d4
+    mov al, 0x0e
+    out dx, al
+    mov dx, 0x03d5
+    mov al, bh
+    out dx, al
+
+    ; 低8位
+    mov dx, 0x03d4
+    mov al, 0x0f
+    out dx, al
+    mov dx, 0x03d5
+    mov al, bl
+    out dx, al
+
+    popad
+    ret
+
+
+
+global read_system_time
+read_system_time:
+    push ebp
+    push edx
+    push ecx
+    push ebx
+
+    xor eax, eax
+    xor ecx, ecx
+    xor edx, edx
+    xor ebx, ebx
+    mov byte al, [esp+0x14]
+    mov dx, 0x70
+    out dx, al
+    nop
+    nop
+    nop
+    nop
+    nop
+    mov dx, 0x71
+    in al, dx
+
+    ; 低4位
+    mov cl, al
+    and cl, 0x0f
+
+    shr al, 4
+    mov bl, 10
+    mul bl
+
+    add ax, cx
+
+    pop ebx
+    pop ecx
+    pop edx
+    pop ebp
+    ret
+
+
 
 section .my_print_data
 times 24 db 0     ; 24个字节缓冲区来存放整数表示的字符

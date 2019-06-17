@@ -18,6 +18,7 @@ extern void switch_to(struct task_struct* cur, struct task_struct* next);
 
 
 struct task_struct* main_thread;    // 主线程PCB
+struct task_struct* idle_thread;    // 主线程PCB
 LIST thread_ready_list;	            // 就绪队列
 LIST thread_all_list;	            // 所有任务队列
 static PLIST_ELEM thread_tag;       // 用于保存队列中的线程结点
@@ -184,14 +185,19 @@ void schedule(){
       不需要将其加入队列,因为当前线程不在就绪队列中。*/
    }
 
-   ASSERT(!list_empty(&thread_ready_list));
+   // ASSERT(!list_empty(&thread_ready_list));
+   if (list_empty(&thread_ready_list)) {
+         thread_unblock(idle_thread);
+   }
+
+
    thread_tag = NULL;	  // thread_tag清空
    // 将thread_ready_list队列中的第一个就绪线程弹出,准备将其调度上cpu.
    thread_tag = list_pop(&thread_ready_list);
    // struct task_struct* next = (struct task_struct*) (   0xfffff000 & ((uint32_t)&thread_tag)  );
    struct task_struct* next = (struct task_struct*) (   0xfffff000 & ((uint32_t)thread_tag)  );
   // print_str("  ========next ");print_int_oct((uint32_t)next);
-   print_char('s');
+   // print_char('s');
    next->status = TASK_RUNNING;
 
    process_activate(next);
@@ -252,6 +258,8 @@ void entry_init_thread(){
     print_str("==&thread_all_list ");print_int_oct((uint32_t)&thread_all_list);
     // 将当前main函数创建为线程
     make_main_thread();
+    /* 创建idle线程 */
+    idle_thread = thread_start("idle", 10, idle, NULL);
     print_str("thread_init done\n");
 
 }
